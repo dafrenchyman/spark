@@ -28,7 +28,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 /**
  *
- * @author jpierret
+ * @author Julien Pierret
  */
 public class SetupSparkTest {
     private JavaSparkContext sparkContext;
