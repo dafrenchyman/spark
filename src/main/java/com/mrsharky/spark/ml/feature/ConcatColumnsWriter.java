@@ -62,13 +62,13 @@ public class ConcatColumnsWriter extends MLWriter implements Serializable {
         private String _concatValue;
 
         // Getters
-        public String[] getInputCols()  { return _inputCols; }
-        public String getOutputCol()    { return _outputCol; }
+        public String[] getInputCols() { return _inputCols;   }
+        public String getOutputCol()   { return _outputCol;   }
         public String getConcatValue() { return _concatValue; }
         
         // Setters
-        public void setInputCols(String[] inputCols) { _inputCols = inputCols; }
-        public void setOutputCol(String outputCol)   { _outputCol = outputCol; }
-        public void setConcatValue(String concatValue)    { _concatValue = concatValue; }
+        public void setInputCols(String[] inputCols)   { _inputCols = inputCols;     }
+        public void setOutputCol(String outputCol)     { _outputCol = outputCol;     }
+        public void setConcatValue(String concatValue) { _concatValue = concatValue; }
     }
 }

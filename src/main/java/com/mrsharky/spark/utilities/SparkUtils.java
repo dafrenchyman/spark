@@ -151,7 +151,7 @@ public class SparkUtils {
             long sampleRDDSize = GetRDDSize(sampleRDD);
             totalSize = sampleRDDSize *(totalRows) / (NO_OF_SAMPLE_ROWS);
         } else {
-        // As the RDD is smaller than sample rows count, we can just calculate the total RDD size
+            // As the RDD is smaller than sample rows count, we can just calculate the total RDD size
             totalSize = GetRDDSize(rdd);
         }
         System.out.println("OptimalPartitioning - Total Sample Size:" + totalSize);

@@ -55,7 +55,7 @@ public class ExplodeVectorFlatMap implements Serializable, FlatMapFunction<Itera
         _columnsToExplode = columnsToExplode;
     }
     
-    public StructType generateSchemaSelectColumns(StructType structure) {
+    public StructType generateSchemaSelectColumns(StructType structure) throws Exception {
         _elementsPerExpansion = new HashMap<Integer, Integer>();
         List columnsToExplode = new ArrayList(_columnsToExplode.keySet());
 
@@ -69,12 +69,16 @@ public class ExplodeVectorFlatMap implements Serializable, FlatMapFunction<Itera
             DataType currDataType = currField.dataType();
             boolean currNullable = currField.nullable();
             newFields.add(DataTypes.createStructField(fieldName, currDataType, currNullable));
-            if (columnsToExplode.contains(fieldName) && currDataType.equals(new VectorUDT().defaultConcreteType())) {
-                int vectorSize = _columnsToExplode.get(fieldName);
-                _elementsPerExpansion.put(i, vectorSize);
-                for (int j = 0; j < vectorSize; j++) {
-                    String newFieldName = fieldName + "_" + j;
-                    newFields.add(DataTypes.createStructField(newFieldName, DataTypes.DoubleType, true));
+            if (columnsToExplode.contains(fieldName)) { 
+                if (currDataType.equals(new VectorUDT().defaultConcreteType())) {
+                    int vectorSize = _columnsToExplode.get(fieldName);
+                    _elementsPerExpansion.put(i, vectorSize);
+                    for (int j = 0; j < vectorSize; j++) {
+                        String newFieldName = fieldName + "_" + j;
+                        newFields.add(DataTypes.createStructField(newFieldName, DataTypes.DoubleType, true));
+                    }
+                } else {
+                    throw new Exception("Column '" + fieldName + "' not of type VectorUDT");
                 }
             }
         }
@@ -116,12 +120,12 @@ public class ExplodeVectorFlatMap implements Serializable, FlatMapFunction<Itera
         return encoder;
     }
     
-    public ExpressionEncoder<Row> getEncoder(StructType structure) {
+    public ExpressionEncoder<Row> getEncoder(StructType structure) throws Exception {
         ExpressionEncoder<Row> encoder = RowEncoder.apply(generateSchemaSelectColumns(structure));
         return encoder;
     }
     
-    public StructType getSchema(StructType structure) {
+    public StructType getSchema(StructType structure) throws Exception {
         return generateSchemaSelectColumns(structure);
     }
 

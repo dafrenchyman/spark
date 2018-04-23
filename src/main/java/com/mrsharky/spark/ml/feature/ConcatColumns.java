@@ -42,7 +42,6 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
-//import org.apache.spark.ml.util.DefaultParamsWritable;
 import org.apache.spark.ml.util.MLWritable;
 import org.apache.spark.sql.functions;
 

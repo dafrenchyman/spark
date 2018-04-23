@@ -36,27 +36,19 @@ import org.apache.spark.ml.util.DefaultParamsWriter$;
  */
 public class ExplodeVectorWriter extends MLWriter implements Serializable {
 
-    private ExplodeVector instance;
+    private ExplodeVector _instance;
     
-    public ExplodeVectorWriter(ExplodeVector instance) {
-        this.instance = instance;
-    }
-      
-    public ExplodeVector getInstance() {
-        return instance;
-    }
-      
-    public void setInstance(ExplodeVector instance) {
-        this.instance = instance;
-    }
+    public ExplodeVectorWriter(ExplodeVector instance) {  _instance = instance; }
+    public ExplodeVector getInstance() { return _instance; }
+    public void setInstance(ExplodeVector instance) { _instance = instance; }
       
     @Override
     public void saveImpl(String path) {
-        DefaultParamsWriter$.MODULE$.saveMetadata(instance, path, sc(), DefaultParamsWriter$.MODULE$
+        DefaultParamsWriter$.MODULE$.saveMetadata(_instance, path, sc(), DefaultParamsWriter$.MODULE$
                 .getMetadataToSave$default$3(), DefaultParamsWriter$.MODULE$.getMetadataToSave$default$4());
         Data data = new Data();
-        data.setInputCols(instance.getInputCols());
-        data.setInputColsSize(instance.getInputColsSize());
+        data.setInputCols(_instance.getInputCols());
+        data.setInputColsSize(_instance.getInputColsSize());
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -68,7 +60,7 @@ public class ExplodeVectorWriter extends MLWriter implements Serializable {
         int[] _inputColsSize;
 
         // Getters
-        public String[] getInputCols()  { return _inputCols; }
+        public String[] getInputCols()  { return _inputCols;     }
         public int[] getInputColsSize() { return _inputColsSize; }
         
         // Setters

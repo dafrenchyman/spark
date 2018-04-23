@@ -96,6 +96,6 @@ public class ConcatColumnsTest {
         // transform the dataset and show results
         Dataset<Row> output = model.transform(data);
         output.show();
-        
+                
     }
 }
