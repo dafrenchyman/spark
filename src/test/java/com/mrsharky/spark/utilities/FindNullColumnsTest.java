@@ -21,15 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mrsharky.spark.ml.feature;
+package com.mrsharky.spark.utilities;
 
-import com.mrsharky.spark.utilities.SetupSparkTest;
+import com.mrsharky.spark.functions.FindNullColumns;
+import com.mrsharky.spark.ml.feature.DropColumns;
 import static com.mrsharky.spark.utilities.SparkUtils.CreateDefaultSparkSession;
 import static com.mrsharky.spark.utilities.SparkUtils.PrintSparkSetting;
-import java.io.IOException;
+import java.util.List;
+import junit.framework.Assert;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -44,7 +47,10 @@ import static org.junit.Assert.*;
  *
  * @author Julien Pierret
  */
-public class DropColumnsTest {
+public class FindNullColumnsTest {
+    
+    public FindNullColumnsTest() {
+    }
     
     private SetupSparkTest sparkSetup;
     private SparkSession spark;
@@ -63,14 +69,13 @@ public class DropColumnsTest {
     public void tearDown() {
         sparkSetup.tearDown();
     }
-    
-    public DropColumnsTest() {
-    }
-    
+
+    /**
+     * Test of getNullColumnsAsListString method, of class FindNullColumns.
+     */
     @Test
-    public void testConcatColumns() throws IOException {
+    public void testFindNullColumns() {
         
-        String outputModelLocation = "./data/" + this.getClass().getSimpleName();
         spark = CreateDefaultSparkSession(this.getClass().getName());
         PrintSparkSetting(spark);
         
@@ -79,21 +84,15 @@ public class DropColumnsTest {
         // Show the input data
         data.show();
         
-        // build a pipeline that concats two columns
-        DropColumns dc = new DropColumns()
-                .setInputCols( new String[] {"StringColumn1", "StringColumn2"} );
-        Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { dc });
-        PipelineModel model = pipeline.fit(data);
-       
-        // Save and load pipeline to disk
-        // This needs to be done to save if Transformer process created correctly
-        model.write().overwrite().save(outputModelLocation);
-        PipelineModel model2 = PipelineModel.load(outputModelLocation);
+        FindNullColumns fnc = new FindNullColumns(data);
         
-        // transform the dataset and show results
-        Dataset<Row> output = model2.transform(data);
-        output.show();
-        
-    }
+        List<String> nullColumns = fnc.getNullColumnsAsListString();
+        for (String nullColumn : nullColumns) {
+            if (!nullColumn.contains("NullColumn")) {
+                Assert.fail(nullColumn + " is not a valid null column");
+            } else {
+                System.out.println(nullColumn + " valid null column");
+            }
+        }
+    }    
 }

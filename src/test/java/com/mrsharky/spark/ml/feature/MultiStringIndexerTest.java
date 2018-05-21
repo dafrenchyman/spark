@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author Julien Pierret
  */
-public class DropColumnsTest {
+public class MultiStringIndexerTest {
     
     private SetupSparkTest sparkSetup;
     private SparkSession spark;
@@ -64,26 +64,29 @@ public class DropColumnsTest {
         sparkSetup.tearDown();
     }
     
-    public DropColumnsTest() {
+    public MultiStringIndexerTest() {
     }
     
     @Test
-    public void testConcatColumns() throws IOException {
+    public void testConcatColumns() throws IOException, Exception {
         
         String outputModelLocation = "./data/" + this.getClass().getSimpleName();
         spark = CreateDefaultSparkSession(this.getClass().getName());
         PrintSparkSetting(spark);
         
-        Dataset<Row> data = spark.read().format("csv").option("header", true).load("./data/testData.csv");
+        Dataset<Row> data = spark.read().format("csv").option("header", true)
+                .load("./data/testData.csv");
+        
+        data = data.select("StringColumn1", "StringColumn2");
         
         // Show the input data
         data.show();
         
         // build a pipeline that concats two columns
-        DropColumns dc = new DropColumns()
-                .setInputCols( new String[] {"StringColumn1", "StringColumn2"} );
-        Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { dc });
+        MultiStringIndexer msi = new MultiStringIndexer()
+                .setInputCols( new String[] {"StringColumn1", "StringColumn2"} )
+                .setOutputCols(new String[] {"StringColumn1_idx", "StringColumn2_idx"});
+        Pipeline pipeline = new Pipeline().setStages(new PipelineStage[] { msi });
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk
@@ -94,6 +97,6 @@ public class DropColumnsTest {
         // transform the dataset and show results
         Dataset<Row> output = model2.transform(data);
         output.show();
-        
+                
     }
 }

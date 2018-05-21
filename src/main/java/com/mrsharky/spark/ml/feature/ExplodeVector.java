@@ -58,7 +58,7 @@ public class ExplodeVector extends Transformer implements Serializable, DefaultP
     }
 
     public ExplodeVector() {
-        _uid = "ExplodeVectorTransform" + "_" + UUID.randomUUID().toString();
+        _uid = ExplodeVector.class.getName() + "_" + UUID.randomUUID().toString();
     }
     
     public ExplodeVector setInputCols(Pair<String, Integer> columnInfo) {
@@ -174,7 +174,11 @@ public class ExplodeVector extends Transformer implements Serializable, DefaultP
 
     public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
-      }
+    }
+    
+    public void org$apache$spark$ml$param$shared$HasInputColsSize$_setter_$inputColsSize_$eq(IntArrayParam intArrayParam) {
+        this._inputColsSize = intArrayParam;
+    }
     
     
     public StringArrayParam inputCols() {

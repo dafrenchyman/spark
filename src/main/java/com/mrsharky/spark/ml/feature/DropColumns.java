@@ -57,31 +57,27 @@ public class DropColumns extends Transformer implements Serializable, DefaultPar
     }
 
     public DropColumns() {
-        _uid = "DropColumns" + "_" + UUID.randomUUID().toString();
+        _uid = DropColumns.class.getName() + "_" + UUID.randomUUID().toString();
     }
     
     // Getters
     public String[] getInputCols() { return get(_inputCols).get(); }
        
     // Setters
-    public DropColumns setInputCols(List<String> columns) {
-        String[] columnsString = columns.toArray(new String[columns.size()]);
-        _inputCols = inputCols();
-        set(_inputCols, columnsString);
-        return this;
-    }
-    
     public DropColumns setInputCols(String[] columns) {
         _inputCols = inputCols();
         set(_inputCols, columns);
         return this;
     }
     
+    public DropColumns setInputCols(List<String> columns) {
+        String[] columnsString = columns.toArray(new String[columns.size()]);
+        return setInputCols(columnsString);
+    }
+    
     public DropColumns setInputCols(String column) {
         String[] columns = new String[]{column};
-        _inputCols = inputCols();
-        set(_inputCols, columns);
-        return this;
+        return setInputCols(columns);
     }
     
     // Overrides
@@ -144,7 +140,7 @@ public class DropColumns extends Transformer implements Serializable, DefaultPar
 
     public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
-      }
+    }
     
     public StringArrayParam inputCols() {
         return new StringArrayParam(this, "inputCols", "Columns to be dropped");

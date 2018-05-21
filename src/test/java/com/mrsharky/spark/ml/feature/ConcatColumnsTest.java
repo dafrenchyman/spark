@@ -70,11 +70,14 @@ public class ConcatColumnsTest {
     @Test
     public void testConcatColumns() throws IOException {
         
-        String outputModelLocation = "./data/concatColumnsTest";
+        String outputModelLocation = "./data/" + this.getClass().getSimpleName();
         spark = CreateDefaultSparkSession(this.getClass().getName());
         PrintSparkSetting(spark);
         
-        Dataset<Row> data = spark.read().format("csv").option("header", true).load("./data/testData.csv");
+        Dataset<Row> data = spark.read().format("csv").option("header", true)
+                .load("./data/testData.csv");
+        
+        data = data.select("StringColumn1", "StringColumn2");
         
         // Show the input data
         data.show();
@@ -91,10 +94,10 @@ public class ConcatColumnsTest {
         // Save and load pipeline to disk
         // This needs to be done to save if Transformer process created correctly
         model.write().overwrite().save(outputModelLocation);
-        model = PipelineModel.load(outputModelLocation);
+        PipelineModel model2 = PipelineModel.load(outputModelLocation);
         
         // transform the dataset and show results
-        Dataset<Row> output = model.transform(data);
+        Dataset<Row> output = model2.transform(data);
         output.show();
                 
     }

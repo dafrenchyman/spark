@@ -57,7 +57,7 @@ public class ConcatColumns extends Transformer implements Serializable, ConcatCo
     private final String _uid;
     
     public ConcatColumns() {
-        _uid = "ConcatColumns" + "_" + UUID.randomUUID().toString();
+        _uid = ConcatColumns.class.getName() + "_" + UUID.randomUUID().toString();
     }
     
     public ConcatColumns(String uid) {
@@ -75,25 +75,21 @@ public class ConcatColumns extends Transformer implements Serializable, ConcatCo
         set(_concatValue, value);
         return this;
     }
-    
-    public ConcatColumns setInputCols(List<String> columns) {
-        String[] columnsString = columns.toArray( new String[columns.size()] );
-        _inputCols = inputCols();
-        set(_inputCols, columnsString);
-        return this;
-    }
-    
+
     public ConcatColumns setInputCols(String[] columns) {
         _inputCols = inputCols();
         set(_inputCols, columns);
         return this;
     }
     
+    public ConcatColumns setInputCols(List<String> columns) {
+        String[] columnsString = columns.toArray( new String[columns.size()] );
+        return setInputCols(columnsString);
+    }
+    
     public ConcatColumns setInputCols(String column) {
         String[] columns = new String[]{column};
-        _inputCols = inputCols();
-        set(_inputCols, columns);
-        return this;
+        return setInputCols(columns);
     }
 
     public ConcatColumns setOutputCol(String value) {

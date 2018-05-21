@@ -23,13 +23,22 @@
  */
 package com.mrsharky.spark.utilities;
 
+import static com.mrsharky.scala.utilities.JavaScalaUtils.JavaListToScalaSeq;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
+import org.apache.spark.ml.PipelineStage;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.col;
 import org.apache.spark.util.SizeEstimator;
 import scala.Tuple2;
+import scala.collection.Seq;
 
 /**
  *
@@ -69,6 +78,33 @@ public class SparkUtils {
             }
         }
     }
+    
+    public static Pipeline GetPipeline(List<PipelineStage> pipelineList ) {
+        // Convert pipelineList from list to array
+        PipelineStage[] stages = new PipelineStage[pipelineList.size()];
+        for (int counter = 0; counter < pipelineList.size(); counter++) {
+            stages[counter] = pipelineList.get(counter);
+        }
+        return new Pipeline().setStages(stages);
+    }
+    
+    public static Dataset<Row> ProcessPipeline(Dataset<Row> input, List<PipelineStage> pipelineList ) {
+        Pipeline pipeline1 = GetPipeline(pipelineList);
+        PipelineModel pipelineModel = pipeline1.fit(input);
+        return pipelineModel.transform(input);
+    }
+    
+    public static Seq<Column> ListStringToSeqColumn(List<String> input) {
+        List<Column> columnsToSelect = new ArrayList<Column>();
+        for (int i = 0; i < input.size(); i++) {
+            String currColumn = input.get(i);
+            if (!columnsToSelect.contains(currColumn)) {
+                columnsToSelect.add(col(currColumn));
+            }
+        }   
+        return JavaListToScalaSeq(columnsToSelect);
+    }
+    
     
     public static <T> Dataset<T> OptimalPartitioning(Dataset<T> input, long eachPartitionSize) {
         long totalMemorySize = GetTotalSize2(input);

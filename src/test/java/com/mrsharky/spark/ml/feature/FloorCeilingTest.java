@@ -33,6 +33,8 @@ import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.types.DataTypes.IntegerType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,7 +46,7 @@ import static org.junit.Assert.*;
  *
  * @author Julien Pierret
  */
-public class DropColumnsTest {
+public class FloorCeilingTest {
     
     private SetupSparkTest sparkSetup;
     private SparkSession spark;
@@ -64,7 +66,7 @@ public class DropColumnsTest {
         sparkSetup.tearDown();
     }
     
-    public DropColumnsTest() {
+    public FloorCeilingTest() {
     }
     
     @Test
@@ -76,14 +78,25 @@ public class DropColumnsTest {
         
         Dataset<Row> data = spark.read().format("csv").option("header", true).load("./data/testData.csv");
         
+        data = data.select("Numeric1", "Numeric2", "Numeric3");
+        
+        data = data.withColumn("Numeric1_tmp", col("Numeric1").cast(IntegerType))
+                .drop("Numeric1").withColumnRenamed("Numeric1_tmp", "Numeric1");
+        data = data.withColumn("Numeric2_tmp", col("Numeric2").cast(IntegerType))
+                .drop("Numeric2").withColumnRenamed("Numeric2_tmp", "Numeric2");
+        data = data.withColumn("Numeric3_tmp", col("Numeric3").cast(IntegerType))
+                .drop("Numeric3").withColumnRenamed("Numeric3_tmp", "Numeric3");
+        
         // Show the input data
         data.show();
         
         // build a pipeline that concats two columns
-        DropColumns dc = new DropColumns()
-                .setInputCols( new String[] {"StringColumn1", "StringColumn2"} );
+        FloorCeiling fc = new FloorCeiling()
+                .setInputCols( new String[] {"Numeric1", "Numeric2", "Numeric3"} )
+                .setLowerPercentile(0.10)
+                .setUpperPercentile(0.90);
         Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { dc });
+            new PipelineStage[] { fc });
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk
@@ -94,6 +107,6 @@ public class DropColumnsTest {
         // transform the dataset and show results
         Dataset<Row> output = model2.transform(data);
         output.show();
-        
+                
     }
 }
