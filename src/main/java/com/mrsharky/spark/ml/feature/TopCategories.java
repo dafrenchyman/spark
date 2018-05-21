@@ -163,9 +163,7 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
         Mapper_ReduceTotalCount mrtc = new Mapper_ReduceTotalCount(numCategories, 2);
         JavaRDD<Row> results = pivotedData.mapPartitions(s -> mrtc.call(s));
         
-        JavaRddUtils jrcbk = new JavaRddUtils();
-        results = jrcbk.ReduceCountsByKeys(results, Arrays.asList(new Integer[]{0,1}), 2);
-        
+        results = JavaRddUtils.ReduceCountsByKeys(results, Arrays.asList(new Integer[]{0,1}), 2);
         List<StructField> structFields = new ArrayList<StructField>();
         structFields.add(DataTypes.createStructField("currVariable", DataTypes.StringType, true));
         structFields.add(DataTypes.createStructField("currValue", DataTypes.StringType, true));
@@ -179,11 +177,11 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
         // Try restricting
         Dataset<Row> subTable = spark.sql("\n"
                 + " SELECT "
-                + "\t\t currVariable \n"
-                + "\t\t , currValue \n"
-                + "\t\t , TotalCount \n"
-                + "\t\t , row_number() OVER(PARTITION BY currVariable ORDER BY TotalCount DESC) AS transactionCounter \n"
-                + "\t FROM allData");
+                + " currVariable \n"
+                + " , currValue \n"
+                + " , TotalCount \n"
+                + " , row_number() OVER(PARTITION BY currVariable ORDER BY TotalCount DESC) AS transactionCounter \n"
+                + " FROM allData");
         subTable.createOrReplaceTempView("SubTable");
         subTable.explain(true);
         List<Row> topElementsList = spark.sql("\n"
@@ -204,9 +202,9 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
             }
             elementRestrictions.get(currVariable).add(currValue);
         }
-        TopCategoriesModel tct = new TopCategoriesModel()
+        TopCategoriesModel tcm = new TopCategoriesModel()
                 .setLookupMap(elementRestrictions);
-        return tct;
+        return tcm;
     }
 
     @Override
