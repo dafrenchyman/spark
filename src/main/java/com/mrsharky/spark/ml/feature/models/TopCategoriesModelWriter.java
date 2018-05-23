@@ -23,7 +23,6 @@
  */
 package com.mrsharky.spark.ml.feature.models;
 
-import com.mrsharky.spark.ml.feature.TopCategoriesHelpers;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.MLWriter;
 import org.apache.spark.ml.util.DefaultParamsWriter$;
-import org.javatuples.Pair;
 
 /**
  *
@@ -60,9 +58,7 @@ public class TopCategoriesModelWriter extends MLWriter implements Serializable {
         Data data = new Data();
         
         Map<String, List<String>> lookups = instance.getLookupMap();
-        Pair<String[], String[]> pairs = TopCategoriesHelpers.convertKeysFromMap(lookups);   
-        data.setKeys(pairs.getValue0());
-        data.setValues(pairs.getValue1());
+        data.setLookup(lookups);
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -70,15 +66,12 @@ public class TopCategoriesModelWriter extends MLWriter implements Serializable {
     }
 
     public static class Data implements Serializable {
-        private String[] _keys;
-        private String[] _values;
+        private Map<String, List<String>> _lookup;
 
         // Getters
-        public String[] getKeys()   { return _keys;   }
-        public String[] getValues() { return _values; }
+        public Map<String, List<String>> getLookup() { return _lookup; }
         
         // Setters
-        public void setKeys(String[] keys)     { this._keys = keys;     }
-        public void setValues(String[] values) { this._values = values; }
+        public void setLookup(Map<String, List<String>> lookup) { this._lookup = lookup; }
     }
 }

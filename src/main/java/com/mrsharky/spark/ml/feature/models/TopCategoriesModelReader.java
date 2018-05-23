@@ -23,14 +23,14 @@
  */
 package com.mrsharky.spark.ml.feature.models;
 
-import com.mrsharky.spark.ml.feature.TopCategoriesHelpers;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
 import org.apache.spark.sql.Row;
+import scala.collection.JavaConverters;
 
 /**
  *
@@ -53,19 +53,12 @@ public class TopCategoriesModelReader extends MLReader<TopCategoriesModel> imple
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
         
-        // Keys
-        Row keysRow = sparkSession().read().parquet(dataPath).select("keys").head();
-        List<String> keysList = keysRow.getList(0);
-        String[] keys = keysList.toArray(new String[keysList.size()]);
-        
-        // Values
-        Row valuesRow = sparkSession().read().parquet(dataPath).select("values").head();
-        List<String> valuesList = valuesRow.getList(0);
-        String[] values = valuesList.toArray(new String[valuesList.size()]);
-        
+        // Lookup
+        Row lookupRow = sparkSession().read().parquet(dataPath).select("lookup").head();
+        Map lookupMap = JavaConverters.mapAsJavaMapConverter(lookupRow.getMap(0)).asJava();
         TopCategoriesModel transformer = new TopCategoriesModel()
-                .setLookupMap(TopCategoriesHelpers.convertMapFromKeys(keys, values));
-                
+                .setLookupMap(lookupMap);
+                    
         DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }

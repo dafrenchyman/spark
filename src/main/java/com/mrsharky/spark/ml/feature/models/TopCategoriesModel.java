@@ -23,16 +23,17 @@
  */
 package com.mrsharky.spark.ml.feature.models;
 
-import com.mrsharky.spark.ml.feature.TopCategoriesHelpers;
+import com.mrsharky.spark.ml.param.MapParam;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.spark.ml.Model;
 import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.param.StringArrayParam;
 import org.apache.spark.ml.util.MLWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -41,7 +42,6 @@ import org.apache.spark.ml.util.DefaultParamsWritable;
 import org.apache.spark.ml.util.MLReader;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
-import org.javatuples.Pair;
 
 /**
  *
@@ -49,8 +49,7 @@ import org.javatuples.Pair;
  */
 public class TopCategoriesModel extends Model<TopCategoriesModel> implements Serializable, DefaultParamsWritable {
     
-    private StringArrayParam _keys;
-    private StringArrayParam _values;
+    private MapParam _lookup;
     private String _uid;
    
     public TopCategoriesModel(String uid) {
@@ -60,27 +59,23 @@ public class TopCategoriesModel extends Model<TopCategoriesModel> implements Ser
     public TopCategoriesModel() {
         _uid = TopCategoriesModel.class.getName() + "_" + UUID.randomUUID().toString();
     }
-     
-    public TopCategoriesModel setLookupMap(Map<String, List<String>> keys) {
-        this._keys = inputKeys();
-        this._values = inputValues();
-        Pair<String[], String[]> pairs = TopCategoriesHelpers.convertKeysFromMap(keys);
-        this.set(this._keys, pairs.getValue0());
-        this.set(this._values, pairs.getValue1());
+    
+    public TopCategoriesModel setLookupMap(Map<String, List<String>> lookup) {
+        this._lookup = lookup();
+        this.set(this._lookup, convertFromListToObject(lookup));
         return this;
     }
-     
+    
     public Map<String, List<String>> getLookupMap() {
-        String[] keys = this.get(this._keys).get();
-        String[] values = this.get(this._values).get();
-        return TopCategoriesHelpers.convertMapFromKeys(keys, values);
+        return convertFromObjectToList(this.get(this._lookup).get());
     }
      
     @Override
     public Dataset<Row> transform(Dataset<?> data) {
         Dataset<Row> newData = null;
-        StructType structType = data.schema();     
-        Map<String, List<Object>> columnsoProcess = TopCategoriesHelpers.convertToObject(getLookupMap());
+        StructType structType = data.schema();
+        
+        Map<String, List<Object>> columnsoProcess = convertToObject(this.getLookupMap());
         try {
             TopCategoriesFlatMap evfm = new TopCategoriesFlatMap(columnsoProcess, structType);
             ExpressionEncoder<Row> encoder = RowEncoder.apply(structType);
@@ -104,28 +99,16 @@ public class TopCategoriesModel extends Model<TopCategoriesModel> implements Ser
     @Override
     public void save(String path) throws IOException {
         write().saveImpl(path);
+    }   
+    
+    public void com$mrsharky$spark$ml$feature$models$TopCategoriesModel$_setter_$lookup_$eq(MapParam param) {
+        this._lookup = param;
+    }
+ 
+    public MapParam lookup() {
+        return new MapParam(this, "lookup", "Lookup Map<Key (Column), List<String> (categories)>");
     }
     
-    public void org$apache$spark$ml$param$shared$HasKey$_setter_$key_$eq(StringArrayParam stringArrayParam) {
-        this._keys = stringArrayParam;
-    }
-    
-    public void org$apache$spark$ml$param$shared$HasValues$_setter_$values_$eq(StringArrayParam stringArrayParam) {
-        this._values = stringArrayParam;
-    }
-
-    public StringArrayParam inputCols() {
-        return new StringArrayParam(this, "inputCols", "Name of columns to be processed");
-    }
-    
-    public StringArrayParam inputKeys() {
-        return new StringArrayParam(this, "inputKeys", "Key columns");
-    }
-    
-    public StringArrayParam inputValues() {
-        return new StringArrayParam(this, "inputValues", "Values for key columns");
-    }
-
     @Override
     public TopCategoriesModel copy(ParamMap arg0) {
         TopCategoriesModel copied = new TopCategoriesModel()
@@ -145,4 +128,35 @@ public class TopCategoriesModel extends Model<TopCategoriesModel> implements Ser
     public MLWriter write() {
         return new TopCategoriesModelWriter(this);
     }
+    
+    // Helpers
+    public static Map<String, List<Object>> convertToObject(Map<String, List<String>> input) {
+        Map<String, List<Object>> output = new HashMap<String, List<Object>>();
+        for (String key : input.keySet()) {
+            output.put(key, new ArrayList<Object>());
+            for (String value : input.get(key)) {
+                output.get(key).add(value);
+            }
+        }
+        return output;
+    }
+    
+    public static Map<String, List<String>> convertFromObjectToList(Map<String, Object> input) {
+        Map<String, List<String>> output = new HashMap<String, List<String>>();
+        for (String key : input.keySet()) {
+            List<String> newInput = (List<String>) input.get(key);
+            output.put(key, newInput);
+        }
+        return output;
+    }
+    
+    public static Map<String, Object> convertFromListToObject(Map<String, List<String>> input) {
+        Map<String, Object> output = new HashMap<String, Object>();
+        for (String key : input.keySet()) {
+            Object newInput = (Object) input.get(key);
+            output.put(key, newInput);
+        }
+        return output;
+    }
+    
 }

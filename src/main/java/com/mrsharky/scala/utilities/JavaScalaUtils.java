@@ -45,7 +45,7 @@ public class JavaScalaUtils {
     }
     
     public static <T> scala.collection.Iterable JavaListToScalaIterable(List<T> input) {
-        Set<T> set = new HashSet<T>(input);   
+        Set<T> set = new HashSet<T>(input);
         return JavaConverters.asScalaIteratorConverter(set.iterator()).asScala().toIterable();
     }
     
