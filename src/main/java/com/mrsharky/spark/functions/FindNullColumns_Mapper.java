@@ -48,7 +48,7 @@ public class FindNullColumns_Mapper implements Serializable, FlatMapFunction<Ite
         long counter = 0;
         StructField[] structFields = null;
         List<Integer> fieldsToProcess = null;
-        Boolean[] finalValues = null;
+        Boolean[] finalValues = new Boolean[0];
         while (lineIterator.hasNext()) {
             Row newLine = lineIterator.next();
             

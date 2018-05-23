@@ -23,9 +23,13 @@
  */
 package com.mrsharky.spark.ml.feature;
 
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import ml.dmlc.xgboost4j.scala.EvalTrait;
 import ml.dmlc.xgboost4j.scala.ObjectiveTrait;
 import ml.dmlc.xgboost4j.scala.spark.XGBoostModel;
+import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.sql.Dataset;
 import scala.collection.immutable.Map;
 
@@ -298,6 +302,12 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
         return this;
     }
     
+    @Override
+    public XGBoostEstimator setPredictionCol(String value) {
+        super.setPredictionCol(value);
+        return this;
+    }
+    
     /**
      * The number of rounds for boosting
      * @param round
@@ -415,11 +425,15 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
         return this;
     }
     
+    /**
+     * Random seed for the C++ part of XGBoost and train/test splitting.
+     * @param seed
+     * @return 
+     */
     public XGBoostEstimator setSeed (long seed) {
         this.set(this.seed(), seed);
         return this;
     }
-    
     
     // Getters
     public String  getBoosterType()           { return                  this.get(this.boosterType()).get(); }
@@ -446,8 +460,11 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
     public int     getRound()                 { return (int)            this.get(this.round()).get(); }
     public int     getNWorkers()              { return (int)            this.get(this.nWorkers()).get(); }
     public int     getNumThreadPerTask()      { return (int)            this.get(this.numThreadPerTask()).get(); }
+    public boolean getUseExtrernalMemory()    { return (boolean)        this.get(this.useExternalMemory()).get(); }
+    public int     getSilent()                { return (int)            this.get(this.silent()).get(); }
     public ObjectiveTrait getCustomObj()      { return (ObjectiveTrait) this.get(this.customObj()).get(); }
     public EvalTrait getCustomEval()          { return (EvalTrait)      this.get(this.customEval()).get(); }
+    public float   getMissing()               { return (float)          this.get(this.missing()).get(); }  
     public long    getTimeoutRequestWorkers() { return (long)           this.get(this.timeoutRequestWorkers()).get(); }  
     public String  getCheckpointPath()        { return                  this.get(this.checkpointPath()).get(); }
     public int     getCheckpointInterval()    { return (int)            this.get(this.checkpointInterval()).get(); }
@@ -465,11 +482,59 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
         super(uid);
     }
     
+    public XGBoostEstimator() {
+        super(XGBoostEstimator.class.getName() + "_" + UUID.randomUUID().toString());
+    }
+    
     public XGBoostModel fit(Dataset<?> dataset) {
         return super.fit(dataset);
     }
 
-    
+    @Override
+    public ml.dmlc.xgboost4j.scala.spark.XGBoostEstimator copy(ParamMap arg0) {
+        XGBoostEstimator copied = null;
+        try {
+            copied = new XGBoostEstimator()
+                    .setFeaturesCol(this.getFeaturesCol())
+                    .setLabelCol(this.getLabelCol());
+            if (!this.get(this.alpha()).isEmpty())                 { copied.setAlpha(                this.getAlpha());                 }
+            if (!this.get(this.boosterType()).isEmpty())           { copied.setBoosterType(          this.getBoosterType());           }
+            if (!this.get(this.checkpointInterval()).isEmpty())    { copied.setCheckpointInterval(   this.getCheckpointInterval());    }
+            if (!this.get(this.checkpointPath()).isEmpty())        { copied.setCheckpointPath(       this.getCheckpointPath());        }
+            if (!this.get(this.colSampleByLevel()).isEmpty())      { copied.setColSampleByLevel(     this.getColSampleByLevel());      }
+            if (!this.get(this.colSampleByTree()).isEmpty())       { copied.setColSampleByTree(      this.getColSampleByTree());       }
+            if (!this.get(this.customEval()).isEmpty())            { copied.setCustomEval(           this.getCustomEval());            }
+            if (!this.get(this.customObj()).isEmpty())             { copied.setCustomObj(            this.getCustomObj());             }
+            if (!this.get(this.eta()).isEmpty())                   { copied.setEta(                  this.getEta());                   }
+            if (!this.get(this.gamma()).isEmpty())                 { copied.setGamma(                this.getGamma());                 }
+            if (!this.get(this.growthPolicty()).isEmpty())         { copied.setGrowthPolicy(         this.getGrowthPolicy());          }
+            if (!this.get(this.lambda()).isEmpty())                { copied.setLambda(               this.getLambda());                }
+            if (!this.get(this.lambdaBias()).isEmpty())            { copied.setLambdaBias(           this.getLambdaBias());            }
+            if (!this.get(this.maxBins()).isEmpty())               { copied.setMaxBins(              this.getMaxBins());               }
+            if (!this.get(this.maxDeltaStep()).isEmpty())          { copied.setMaxDeltaStep(         this.getMaxDeltaStep());          }
+            if (!this.get(this.maxDepth()).isEmpty())              { copied.setMaxDepth(             this.getMaxDepth());              }
+            if (!this.get(this.minChildWeight()).isEmpty())        { copied.setMinChildWeight(       this.getMinChildWeight());        }
+            if (!this.get(this.missing()).isEmpty())               { copied.setMissing(              this.getMissing());               }
+            if (!this.get(this.nWorkers()).isEmpty())              { copied.setNWorkers(             this.getNWorkers());              }
+            if (!this.get(this.normalizeType()).isEmpty())         { copied.setNormalizeType(        this.getNormalizeType());         }
+            if (!this.get(this.numThreadPerTask()).isEmpty())      { copied.setNumThreadPerTask(     this.getNumThreadPerTask());      }
+            if (!this.get(this.rateDrop()).isEmpty())              { copied.setRateDrop(             this.getRateDrop());              }
+            if (!this.get(this.round()).isEmpty())                 { copied.setRound(                this.getRound());                 }
+            if (!this.get(this.sampleType()).isEmpty())            { copied.setSampleType(           this.getSampleType());            }
+            if (!this.get(this.scalePosWeight()).isEmpty())        { copied.setScalePosWeight(       this.getScalePosWeight());        }
+            if (!this.get(this.seed()).isEmpty())                  { copied.setSeed(                 this.getSeed());                  }
+            if (!this.get(this.silent()).isEmpty())                { copied.setSilent(               this.getSilent());                }
+            if (!this.get(this.sketchEps()).isEmpty())             { copied.setSketchEps(            this.getSketchEps());             }
+            if (!this.get(this.skipDrop()).isEmpty())              { copied.setSkipDrop(             this.getSkipDrop());              }
+            if (!this.get(this.subSample()).isEmpty())             { copied.setSubSample(            this.getSubSample());             }
+            if (!this.get(this.timeoutRequestWorkers()).isEmpty()) { copied.setTimeoutRequestWorkers(this.getTimeoutRequestWorkers()); }
+            if (!this.get(this.treeMethod()).isEmpty())            { copied.setTreeMethod(           this.getTreeMethod());            }
+            if (!this.get(this.useExternalMemory()).isEmpty())     { copied.setUseExternalMemory(    this.getUseExtrernalMemory());    }
+        } catch (Exception ex) {
+            Logger.getLogger(XGBoostEstimator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return copied;
+    } 
 
     
 }

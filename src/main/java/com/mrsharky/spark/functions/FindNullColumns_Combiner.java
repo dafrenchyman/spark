@@ -39,7 +39,7 @@ public class FindNullColumns_Combiner implements Serializable, Function2<Row, Ro
 
     @Override
     public Row call(Row v1, Row v2)  {
-        Boolean[] finalValues = null;
+        Boolean[] finalValues = new Boolean[0];
         int size = Math.max(v1.length(), v2.length());
         if (v1.size() > 0 && v2.size() > 0) {
             finalValues = new Boolean[v1.length()];

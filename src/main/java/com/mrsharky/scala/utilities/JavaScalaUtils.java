@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import scala.collection.JavaConverters;
 import scala.collection.immutable.Map;
 import scala.collection.Seq;
@@ -46,7 +45,7 @@ public class JavaScalaUtils {
     }
     
     public static <T> scala.collection.Iterable JavaListToScalaIterable(List<T> input) {
-        TreeSet<T> set = new TreeSet<T>(input);   
+        Set<T> set = new HashSet<T>(input);   
         return JavaConverters.asScalaIteratorConverter(set.iterator()).asScala().toIterable();
     }
     
