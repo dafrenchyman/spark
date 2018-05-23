@@ -10,7 +10,22 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <repositories>
+        <!--repository>
+            <id>GitHub Repo</id>
+            <name>GitHub Repo</name>
+            <url>https://raw.githubusercontent.com/CodingCat/xgboost/maven-repo/</url>
+        </repository-->
+    </repositories>
+    
     <dependencies>
+        
+
+        <dependency>
+            <groupId>com.github.hirofumi</groupId>
+            <artifactId>xgboost4j-spark_2.11</artifactId>
+            <version>0.7.1-p1</version>
+        </dependency>
              
         <!-- Spark Dependencies -->
         <dependency>

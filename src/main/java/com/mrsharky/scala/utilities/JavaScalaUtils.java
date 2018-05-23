@@ -23,12 +23,16 @@
  */
 package com.mrsharky.scala.utilities;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import scala.collection.JavaConverters;
+import scala.collection.immutable.Map;
 import scala.collection.Seq;
+import scala.Predef;
+import scala.Tuple2;
 
 /**
  *
@@ -45,4 +49,11 @@ public class JavaScalaUtils {
         TreeSet<T> set = new TreeSet<T>(input);   
         return JavaConverters.asScalaIteratorConverter(set.iterator()).asScala().toIterable();
     }
+    
+    public static <A, B> Map<A, B> JavaToImmutableScalaMap(HashMap<A, B> m) {
+        return JavaConverters.mapAsScalaMapConverter(m).asScala().toMap(
+            Predef.<Tuple2<A, B>>conforms()
+        );
+    }
+    
 }

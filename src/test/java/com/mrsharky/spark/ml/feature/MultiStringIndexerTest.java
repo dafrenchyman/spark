@@ -70,7 +70,7 @@ public class MultiStringIndexerTest {
     @Test
     public void testConcatColumns() throws IOException, Exception {
         
-        String outputModelLocation = "./data/" + this.getClass().getSimpleName();
+        String outputModelLocation = "./results/" + this.getClass().getSimpleName();
         spark = CreateDefaultSparkSession(this.getClass().getName());
         PrintSparkSetting(spark);
         

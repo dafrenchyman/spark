@@ -70,7 +70,7 @@ public class DropColumnsTest {
     @Test
     public void testConcatColumns() throws IOException {
         
-        String outputModelLocation = "./data/" + this.getClass().getSimpleName();
+        String outputModelLocation = "./results/" + this.getClass().getSimpleName();
         spark = CreateDefaultSparkSession(this.getClass().getName());
         PrintSparkSetting(spark);
         
