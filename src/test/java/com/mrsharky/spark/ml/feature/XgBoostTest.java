@@ -122,6 +122,12 @@ public class XgBoostTest {
                 .setLabelCol("indexedLabel");
                   
         Pipeline pipeline = new Pipeline().setStages(new PipelineStage[] { xgb });
+        
+        // TODO: make it so you can save it without a fit
+        // Save the pipeline without training it
+        //pipeline.write().overwrite().save(outputModelLocation);
+        //pipeline = Pipeline.load(outputModelLocation);
+        
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk

@@ -142,15 +142,15 @@ public class FloorCeilingModel extends Model<FloorCeilingModel> implements Seria
         write().saveImpl(path);
     }
 
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$models$FloorCeilingModel$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
     
-    public void org$apache$spark$ml$param$shared$HasFloors$_setter_$floors_$eq(DoubleArrayParam doubleArrayParam) {
+    public void com$mrsharky$spark$ml$feature$models$FloorCeilingModel$_setter_$floors_$eq(DoubleArrayParam doubleArrayParam) {
         this._floors = doubleArrayParam;
     }
     
-    public void org$apache$spark$ml$param$shared$HasCeilings$_setter_$ceilings_$eq(DoubleArrayParam doubleArrayParam) {
+    public void com$mrsharky$spark$ml$feature$models$FloorCeilingModel$_setter_$ceilings_$eq(DoubleArrayParam doubleArrayParam) {
         this._ceilings = doubleArrayParam;
     }
     

@@ -85,8 +85,14 @@ public class MultiStringIndexerTest {
         // build a pipeline that concats two columns
         MultiStringIndexer msi = new MultiStringIndexer()
                 .setInputCols( new String[] {"StringColumn1", "StringColumn2"} )
+                .setHandleInvalid("skip")
                 .setOutputCols(new String[] {"StringColumn1_idx", "StringColumn2_idx"});
         Pipeline pipeline = new Pipeline().setStages(new PipelineStage[] { msi });
+        
+        // Save the pipeline without training it
+        pipeline.write().overwrite().save(outputModelLocation);
+        pipeline = Pipeline.load(outputModelLocation);
+        
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk

@@ -35,6 +35,7 @@ import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.feature.StringIndexer;
+import org.apache.spark.ml.param.Param;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.param.StringArrayParam;
 import org.apache.spark.ml.util.MLReader;
@@ -54,8 +55,8 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
     
     private StringArrayParam _inputCols;
     private StringArrayParam _outputCols;
+    private Param<String> _handleInvalid;
     private String _uid;
-    
    
     @Override
     public String uid() {
@@ -76,6 +77,10 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
     
     public String[] getOutputCols() {
         return this.get(_outputCols).get();
+    }
+    
+    public String getHandleInvalid() {
+        return this.get(_handleInvalid).get();
     }
     
     public MultiStringIndexer setInputCols(List<String> columns) {
@@ -108,6 +113,15 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
         return this;
     }
     
+    public MultiStringIndexer setHandleInvalid(String invalid) {
+        _handleInvalid = handleInvalid();
+        this.set(_handleInvalid, invalid);
+        return this;
+    }
+    
+    public boolean hasHandleInvalid() {
+        return !this.get(this.handleInvalid()).isEmpty();
+    }
      
     @Override
     public StructType transformSchema(StructType oldSchema) {
@@ -162,6 +176,10 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
                 StringIndexer indexer = new StringIndexer()
                         .setInputCol(currIn)
                         .setOutputCol(currOut);
+                if (hasHandleInvalid()) {
+                    String invalid = this.getHandleInvalid();
+                    indexer.setHandleInvalid(invalid);
+                }
                 pipelineList.add(indexer);
             }
         }
@@ -176,6 +194,9 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
         MultiStringIndexer copied = new MultiStringIndexer()
                 .setInputCols(this.getInputCols())
                 .setOutputCols(this.getOutputCols());
+         if (hasHandleInvalid()) {
+             copied.setHandleInvalid(this.getHandleInvalid());
+         }
         return copied;
     }
 
@@ -205,4 +226,7 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
         return new StringArrayParam(this, "outputCols", "Output column names");
     }
     
+    public Param<String> handleInvalid() {
+        return new Param<String>(this, "handleInvalid", "What should invalid values be replaced with");
+    }
 }

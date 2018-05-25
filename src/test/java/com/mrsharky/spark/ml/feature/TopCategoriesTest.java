@@ -86,8 +86,12 @@ public class TopCategoriesTest {
         TopCategories tc = new TopCategories()
                 .setInputCols( new String[] {"StringColumn1", "StringColumn2"} )
                 .setNumCategories(2);
-        Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { tc });
+        Pipeline pipeline = new Pipeline().setStages( new PipelineStage[] { tc });
+        
+        // Save the pipeline without training it
+        pipeline.write().overwrite().save(outputModelLocation);
+        pipeline = Pipeline.load(outputModelLocation);
+        
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk

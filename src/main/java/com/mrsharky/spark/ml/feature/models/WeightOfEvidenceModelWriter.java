@@ -35,19 +35,19 @@ import org.apache.spark.ml.util.DefaultParamsWriter$;
  *
  * @author Julien Pierret
  */
-public class TopCategoriesModelWriter extends MLWriter implements Serializable {
+public class WeightOfEvidenceModelWriter extends MLWriter implements Serializable {
 
-    private TopCategoriesModel instance;
+    private WeightOfEvidenceModel instance;
     
-    public TopCategoriesModelWriter(TopCategoriesModel instance) {
+    public WeightOfEvidenceModelWriter(WeightOfEvidenceModel instance) {
         this.instance = instance;
     }
       
-    public TopCategoriesModel getInstance() {
+    public WeightOfEvidenceModel getInstance() {
         return instance;
     }
       
-    public void setInstance(TopCategoriesModel instance) {
+    public void setInstance(WeightOfEvidenceModel instance) {
         this.instance = instance;
     }
       
@@ -57,7 +57,10 @@ public class TopCategoriesModelWriter extends MLWriter implements Serializable {
                 .getMetadataToSave$default$3(), DefaultParamsWriter$.MODULE$.getMetadataToSave$default$4());
         Data data = new Data();
         
-        data.setLookup(instance.getLookupMap());
+        data.setLookup(instance.getLookup());
+        data.setInputCols(instance.getInputCols());
+        data.setOutputCols(instance.getOutputCols());
+
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -65,12 +68,18 @@ public class TopCategoriesModelWriter extends MLWriter implements Serializable {
     }
 
     public static class Data implements Serializable {
-        private Map<String, List<String>> _lookup;
+        private String[] _inputCols;
+        private String[] _outputCols;
+        private Map<String, Map<String, Double>> _lookup;
 
         // Getters
-        public Map<String, List<String>> getLookup() { return _lookup; }
+        public String[] getInputCols()                      { return _inputCols;  }
+        public String[] getOutputCols()                     { return _outputCols; }
+        public Map<String, Map<String, Double>> getLookup() { return _lookup;     }
         
         // Setters
-        public void setLookup(Map<String, List<String>> lookup) { this._lookup = lookup; }
+        public void setInputCols(String[] inputCols)                   { _inputCols = inputCols;   }
+        public void setOutputCols(String[] outputCols)                 { _outputCols = outputCols; }
+        public void setLookup(Map<String, Map<String, Double>> lookup) { this._lookup = lookup;    }
     }
 }

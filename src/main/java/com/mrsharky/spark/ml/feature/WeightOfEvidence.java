@@ -24,31 +24,36 @@
 package com.mrsharky.spark.ml.feature;
 
 import com.mrsharky.spark.ml.feature.models.FloorCeilingModel;
+import com.mrsharky.spark.ml.feature.models.WeightOfEvidenceModel;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.spark.ml.Estimator;
-import org.apache.spark.ml.param.DoubleParam;
+import org.apache.spark.ml.param.Param;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.param.StringArrayParam;
+import org.apache.spark.ml.param.IntParam;
 import org.apache.spark.ml.util.MLReader;
 import org.apache.spark.ml.util.MLWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.ml.util.DefaultParamsWritable;
+import org.apache.spark.sql.SparkSession;
 
 /**
  *
  * @author Julien Pierret
  */
-public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serializable, DefaultParamsWritable {
+public class WeightOfEvidence extends Estimator<WeightOfEvidenceModel> implements Serializable, DefaultParamsWritable {
     
     private StringArrayParam _inputCols;
-    private DoubleParam _lowerPercentile;
-    private DoubleParam _upperPercentile;
+    private StringArrayParam _outputCols;
+    private Param<String> _booleanResponseCol;
+    private IntParam _minObs;
     private String _uid;
    
     @Override
@@ -56,128 +61,161 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         return _uid;
     }
     
-    public FloorCeiling(String uid) {
+    public WeightOfEvidence(String uid) {
         _uid = uid;
     }
 
-    public FloorCeiling() {
-        _uid = FloorCeiling.class.getName() + "_" + UUID.randomUUID().toString();
+    public WeightOfEvidence() {
+        _uid = WeightOfEvidence.class.getName() + "_" + UUID.randomUUID().toString();
     }
     
     public String[] getInputCols() {
         return this.get(_inputCols).get();
     }
     
-    public double getLowerPercentile() {
-        return (double) this.get(_lowerPercentile).get();
+    public String[] getOutputCols() {
+        return this.get(_outputCols).get();
     }
     
-    public double getUpperPercentile() {
-        return (double) this.get(_upperPercentile).get();
+    public String getBooleanResponseCol() {
+        return this.get(this._booleanResponseCol).get();
     }
     
-    public FloorCeiling setInputCols(List<String> columns) {
+    public int getMinObs() {
+        return (int) this.get(this._minObs).get();
+    }
+    
+    public WeightOfEvidence setInputCols(String[] names) {
+        String [] outputs = new String[names.length];
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = names[i] + "_woe";
+        }
+        _inputCols = inputCols();
+        _outputCols = outputCols();
+        this.set(_inputCols, names);
+        this.set(_outputCols, outputs);
+        return this;
+    }
+      
+    public WeightOfEvidence setInputCols(List<String> columns) {
         String[] columnsString = columns.toArray(new String[columns.size()]);
         return setInputCols(columnsString);
     }
     
-    public FloorCeiling setInputCols(String[] names) {
+    public WeightOfEvidence setInputCols(String name) {
         _inputCols = inputCols();
-        this.set(_inputCols, names);
+        String[] names = new String[]{name};
+        return setInputCols(names);
+    }
+    
+    public WeightOfEvidence setOutputCols(String[] names) {
+        _outputCols = outputCols();
+        this.set(_outputCols, names);
         return this;
     }
     
-    public FloorCeiling setLowerPercentile(double value) {
-        _lowerPercentile = lowerPercentile();
-        this.set(_lowerPercentile, value);
+    public WeightOfEvidence setOutputCols(List<String> names) {
+        String[] columnsString = names.toArray(new String[names.size()]);
+        return setOutputCols(columnsString);
+    }
+    
+    public WeightOfEvidence setBooleanResponseCol(String name) {
+        _booleanResponseCol = booleanResponseCol();
+        this.set(_booleanResponseCol, name);
         return this;
     }
     
-    public FloorCeiling setUpperPercentile(double value) {
-        _upperPercentile = upperPercentile();
-        this.set(_upperPercentile, value);
+    public WeightOfEvidence setMinObs(int minObs) {
+        _minObs = minObs();
+        this.set(_minObs, minObs);
         return this;
     }
     
     @Override
     public StructType transformSchema(StructType oldSchema) {
         return oldSchema;
-    }    
+    }
     
     @Override
-    public FloorCeilingModel fit(Dataset<?> dataset) {
+    public WeightOfEvidenceModel fit(Dataset<?> dataset) {
+        SparkSession spark = dataset.sparkSession();
         String[] columns = this.getInputCols();
-        double[] floors = new double[columns.length];
-        double[] ceilings = new double[columns.length];
-        double lowerPerc = this.getLowerPercentile();
-        double upperPerc = this.getUpperPercentile();
-        double[] min = new double[columns.length];
-        double[] max = new double[columns.length];
+        String response  = this.getBooleanResponseCol();
+        int minObs       = this.getMinObs();
+        
+        Map<String, Map<String, Double>> results = new HashMap<String, Map<String, Double>>();
         
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
-            List<Row> values = dataset.select(column).collectAsList();
-            double[] valuesDouble = new double[values.size()];
-            double currMin = Double.MAX_VALUE;
-            double currMax = Double.MIN_VALUE;
-            for (int j = 0; j < valuesDouble.length; j++) {
-                Object value = values.get(j).get(0);
-                if (value != null) {
-                    if (value.getClass().equals(Long.class)) {
-                        valuesDouble[j] = values.get(j).getLong(0);
-                    } else if (value.getClass().equals(Double.class)) {
-                        valuesDouble[j] = values.get(j).getDouble(0);
-                    } else if (value.getClass().equals(Integer.class)) {
-                        valuesDouble[j] = values.get(j).getInt(0);
-                    } else if (value.getClass().equals(Float.class)) {
-                        valuesDouble[j] = values.get(j).getFloat(0);
-                    } else if (value.getClass().equals(Short.class)) {
-                        valuesDouble[j] = values.get(j).getShort(0);
-                    }
-                    
-                    // Min
-                    if (valuesDouble[j] < currMin) {
-                        currMin = valuesDouble[j];
-                    }
-                    
-                    // Max
-                    if (valuesDouble[j] > currMax) {
-                        currMax = valuesDouble[j];
-                    }
-                }
-            }
             
-            Percentile perc = new Percentile();
-            perc.setData(valuesDouble);
-            floors[i] = perc.evaluate(lowerPerc*100);
-            ceilings[i] = perc.evaluate(upperPerc*100);
-            if (floors[i] == ceilings[i]) {
-                floors[i] = currMin;
-                ceilings[i] = currMax;
+            dataset.createOrReplaceTempView("dataset");
+        
+            // Try restricting
+            Dataset<Row> subTable = spark.sql(
+                    " SELECT "
+                    + " " + column + " AS currValue"
+                    + " , SUM(CASE WHEN " + response + "= 0 THEN 1 ELSE 0 END) AS goods "
+                    + " , SUM(CASE WHEN " + response + "= 1 THEN 1 ELSE 0 END) AS bads "
+                    + " , COUNT(*) AS Cnt "
+                    + " FROM dataset GROUP BY " + column);
+            subTable.createOrReplaceTempView("subTable");
+            
+            // Group all < minObs into one large category
+            Dataset<Row> othersTable = spark.sql(
+                    " SELECT "
+                    + " 'OtherBin' AS currValue"
+                    + " , SUM(goods) AS goods "
+                    + " , SUM(bads)  AS bads "
+                    + " FROM subTable WHERE Cnt < " + minObs);
+            othersTable.createOrReplaceTempView("othersTable");
+            
+            // Final
+            Dataset<Row> finalTable = spark.sql(
+                    " SELECT "
+                    + " currValue"
+                    + " , CASE WHEN bads = 0 AND goods = 0 THEN NULL "
+                    + "        WHEN bads = 0 THEN log(goods/1) "
+                    + "        WHEN goods = 0 THEN log(1/bads) "
+                    + "        ELSE log(goods/bads) END AS woe "
+                    + " FROM subTable WHERE Cnt >= " + minObs + " UNION ALL "
+                    + " SELECT "
+                    + "  currValue "
+                    + " , CASE WHEN bads = 0 AND goods = 0 THEN NULL "
+                    + "        WHEN bads = 0 THEN log(goods/1) "
+                    + "        WHEN goods = 0 THEN log(1/bads) "
+                    + "        ELSE log(goods/bads) END AS woe "
+                    + " FROM othersTable ");
+
+            List<Row> values = finalTable.collectAsList();
+            
+            results.put(column, new HashMap<String, Double>());
+            
+            for (Row currRow : values) {
+                String currValue = currRow.getString(0);
+                Double woe = (Double) currRow.get(1);
+                results.get(column).put(currValue, woe);
             }
-            min[i] = currMin;
-            max[i] = currMax;
         }
         
-        FloorCeilingModel fcm = new FloorCeilingModel()
-                .setInputCols(columns)
-                .setCeils(ceilings)
-                .setFloors(floors);
-        return fcm;
+        WeightOfEvidenceModel woem = new WeightOfEvidenceModel()
+                .setInputCols(this.getInputCols())
+                .setOutputCols(this.getOutputCols())
+                .setLookup(results);
+        return woem;
     }
 
     @Override
-    public Estimator<FloorCeilingModel> copy(ParamMap arg0) {
-        FloorCeiling copied = new FloorCeiling()
+    public Estimator<WeightOfEvidenceModel> copy(ParamMap arg0) {
+        WeightOfEvidence copied = new WeightOfEvidence()
                 .setInputCols(this.getInputCols())
-                .setLowerPercentile(this.getLowerPercentile())
-                .setUpperPercentile(this.getUpperPercentile());
+                .setOutputCols(this.getOutputCols())
+                .setMinObs(this.getMinObs());
         return copied;
     }
 
     @Override
     public MLWriter write() {
-        return new FloorCeilingWriter(this);
+        return new WeightOfEvidenceWriter(this);
     }
 
     @Override
@@ -185,35 +223,31 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         write().saveImpl(path);
     }
     
-    public static MLReader<FloorCeiling> read() {
-        return new FloorCeilingReader();
+    public static MLReader<WeightOfEvidence> read() {
+        return new WeightOfEvidenceReader();
     }
     
-    public FloorCeiling load(String path) {
-        return ((FloorCeilingReader)read()).load(path);
+    public WeightOfEvidence load(String path) {
+        return ((WeightOfEvidenceReader)read()).load(path);
     }
     
     public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
-    
-    public void org$apache$spark$ml$param$shared$HasLowerPercentile$_setter_$lowerPercentiles_$eq(DoubleParam doubleParam) {
-        this._lowerPercentile = doubleParam;
-    }
-    
-    public void org$apache$spark$ml$param$shared$HasUpperPercentile$_setter_$upperPercentiles_$eq(DoubleParam doubleParam) {
-        this._upperPercentile = doubleParam;
-    }
-    
+      
     public StringArrayParam inputCols() {
         return new StringArrayParam(this, "inputCols", "Name of columns to be processed");
     }
     
-    public DoubleParam lowerPercentile() {
-        return new DoubleParam(this, "lowerPercentile", "Lower percentile cutoff");
+    public StringArrayParam outputCols() {
+        return new StringArrayParam(this, "outputCols", "Name of columns for results");
     }
     
-    public DoubleParam upperPercentile() {     
-        return new DoubleParam(this, "upperPercentile", "Upper percentile cutoff");
+    public Param<String> booleanResponseCol() {
+        return new Param<String>(this, "booleanResponse", "Boolean response variable column");
+    }
+    
+    public IntParam minObs() {
+        return new IntParam(this, "minObs", "Minimum number of observations to keep value");
     }
 }

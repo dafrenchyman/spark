@@ -57,6 +57,10 @@ public class MultiStringIndexerWriter extends MLWriter implements Serializable {
         Data data = new Data();
         data.setInputCols(instance.getInputCols());
         data.setOutputCols(instance.getOutputCols());
+        if (instance.hasHandleInvalid()) {
+            data.setHandleInvalid(instance.getHandleInvalid());
+        }
+        
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -64,16 +68,19 @@ public class MultiStringIndexerWriter extends MLWriter implements Serializable {
     }
 
     public static class Data implements Serializable {
-        String[] _inputCols;
-        String[] _outputCols;
+        private String[] _inputCols;
+        private String[] _outputCols;
+        private String _handleInvalid;
 
         // Getters
-        public String[] getInputCols()  { return _inputCols;  }
-        public String[] getOutputCols() { return _outputCols; }
+        public String[] getInputCols()     { return _inputCols;     }
+        public String[] getOutputCols()    { return _outputCols;    }
+        public String   getHandleInvalid() { return _handleInvalid; }
         
         // Setters
-        public void setInputCols(String[] inputCols)  { _inputCols = inputCols;  }
-        public void setOutputCols(String[] outputCols) { _outputCols = outputCols; }
+        public void setInputCols(String[] inputCols)         { _inputCols = inputCols;         }
+        public void setOutputCols(String[] outputCols)       { _outputCols = outputCols;       }
+        public void setHandleInvalid(String handleInvalid)   { _handleInvalid = handleInvalid; }
         
     }
 }

@@ -172,23 +172,23 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
         StructType schema = DataTypes.createStructType(structFields);
         Dataset<Row> allData = spark.createDataFrame(results, schema);
         allData = allData.persist(StorageLevel.DISK_ONLY());
-        allData.createOrReplaceTempView("allData");
+        allData.createOrReplaceTempView("dataset");
         
         // Try restricting
-        Dataset<Row> subTable = spark.sql("\n"
-                + " SELECT "
-                + " currVariable \n"
-                + " , currValue \n"
-                + " , TotalCount \n"
-                + " , row_number() OVER(PARTITION BY currVariable ORDER BY TotalCount DESC) AS transactionCounter \n"
-                + " FROM allData");
+        Dataset<Row> subTable = spark.sql(
+                " SELECT "
+                + " currVariable "
+                + " , currValue "
+                + " , TotalCount "
+                + " , row_number() OVER(PARTITION BY currVariable ORDER BY TotalCount DESC) AS transactionCounter "
+                + " FROM dataset");
         subTable.createOrReplaceTempView("SubTable");
         subTable.explain(true);
-        List<Row> topElementsList = spark.sql("\n"
-                + " SELECT \n"
-                + " currVariable, currValue \n "
-                + " FROM SubTable \n"
-                + " WHERE transactionCounter <= " + numCategories + "\n")
+        List<Row> topElementsList = spark.sql(
+                " SELECT "
+                + " currVariable, currValue "
+                + " FROM SubTable "
+                + " WHERE transactionCounter <= " + numCategories + "")
                 .collectAsList();
         
         // Restructure the List<Row> into the fields and values we will restrict

@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mrsharky.spark.ml.feature.models;
+package com.mrsharky.spark.ml.feature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.MLWriter;
 import org.apache.spark.ml.util.DefaultParamsWriter$;
@@ -35,29 +34,25 @@ import org.apache.spark.ml.util.DefaultParamsWriter$;
  *
  * @author Julien Pierret
  */
-public class TopCategoriesModelWriter extends MLWriter implements Serializable {
+public class WeightOfEvidenceWriter extends MLWriter implements Serializable {
 
-    private TopCategoriesModel instance;
+    private WeightOfEvidence instance;
     
-    public TopCategoriesModelWriter(TopCategoriesModel instance) {
-        this.instance = instance;
-    }
-      
-    public TopCategoriesModel getInstance() {
-        return instance;
-    }
-      
-    public void setInstance(TopCategoriesModel instance) {
-        this.instance = instance;
-    }
+    public WeightOfEvidenceWriter(WeightOfEvidence instance) { this.instance = instance; }
+    
+    public WeightOfEvidence getInstance() { return instance; } 
+    public void setInstance(WeightOfEvidence instance) { this.instance = instance; }
       
     @Override
     public void saveImpl(String path) {
         DefaultParamsWriter$.MODULE$.saveMetadata(instance, path, sc(), DefaultParamsWriter$.MODULE$
                 .getMetadataToSave$default$3(), DefaultParamsWriter$.MODULE$.getMetadataToSave$default$4());
         Data data = new Data();
+        data.setInputCols(instance.getInputCols());
+        data.setOutputCols(instance.getOutputCols());
+        data.setMinObs(instance.getMinObs());
+        data.setBooleanResponse(instance.getBooleanResponseCol());
         
-        data.setLookup(instance.getLookupMap());
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -65,12 +60,21 @@ public class TopCategoriesModelWriter extends MLWriter implements Serializable {
     }
 
     public static class Data implements Serializable {
-        private Map<String, List<String>> _lookup;
-
+        String[] _inputCols;
+        String[] _outputCols;
+        String _response;
+        int _minObs;
+        
         // Getters
-        public Map<String, List<String>> getLookup() { return _lookup; }
+        public String[] getInputCols()     { return _inputCols;  }
+        public String[] getOutputCols()    { return _outputCols; }
+        public String getBooleanResponse() { return _response;   }
+        public int getMinObs()             { return _minObs;     }
         
         // Setters
-        public void setLookup(Map<String, List<String>> lookup) { this._lookup = lookup; }
+        public void setInputCols(String[] inputCols)    { _inputCols = inputCols;   }
+        public void setOutputCols(String[] outputCols)  { _outputCols = outputCols; }
+        public void setBooleanResponse(String response) { _response = response;     }
+        public void setMinObs(int minObs)               { _minObs = minObs;         } 
     }
 }

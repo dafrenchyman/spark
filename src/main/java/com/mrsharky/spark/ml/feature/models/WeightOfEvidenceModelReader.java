@@ -21,25 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mrsharky.spark.ml.feature;
+package com.mrsharky.spark.ml.feature.models;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import scala.collection.JavaConverters;
 
 /**
  *
  * @author Julien Pierret
  */
-public class MultiStringIndexerReader extends MLReader<MultiStringIndexer> implements Serializable {
+public class WeightOfEvidenceModelReader extends MLReader<WeightOfEvidenceModel> implements Serializable {
     
-    private String className = MultiStringIndexer.class.getName();
+    private String className = WeightOfEvidenceModel.class.getName();
     
     public String getClassName() {
         return className;
@@ -50,31 +53,28 @@ public class MultiStringIndexerReader extends MLReader<MultiStringIndexer> imple
     }
     
     @Override
-    public MultiStringIndexer load(String path) {
-        DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
-        String dataPath = new Path(path, "data").toString();
-        Dataset<Row> data = sparkSession().read().parquet(dataPath);
-        
-        // Get the columns
-        Row inputCols = data.select("inputCols").head();
-        List<String> inputColumnNames = inputCols.getList(0);
-        
-        Row outputCols = data.select("outputCols").head();
-        List<String> outputColumnNames = outputCols.getList(0);
-        
-        // handleInvalid
-        Row handleInvalidRow = data.select("handleInvalid").head();
-        String handleInvalid = handleInvalidRow.getString(0);
-        
-        // Set the estimator
-        MultiStringIndexer transformer = new MultiStringIndexer()
-                .setInputCols(inputColumnNames)
-                .setOutputCols(outputColumnNames);
-        if (handleInvalid != null) {
-            transformer.setHandleInvalid(handleInvalid);
+    public WeightOfEvidenceModel load(String path) {
+        try {
+            DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
+            String dataPath = new Path(path, "data").toString();
+            Dataset<Row> data = sparkSession().read().parquet(dataPath);
+            
+            List<String> inputCol = data.select("inputCols").head().getList(0);
+            List<String> outputCol = data.select("outputCols").head().getList(0);
+            
+            // Lookup
+            Row lookupRow = data.select("lookup").head();
+            Map lookupMap = JavaConverters.mapAsJavaMapConverter(lookupRow.getMap(0)).asJava();
+            WeightOfEvidenceModel transformer = new WeightOfEvidenceModel()
+                    .setInputCols(inputCol)
+                    .setOutputCols(outputCol)
+                    .setLookup(lookupMap);
+            
+            DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+            return transformer;
+        } catch (Exception ex) {
+            Logger.getLogger(WeightOfEvidenceModelReader.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
-        return transformer;
+        return null;
     }
 }

@@ -82,8 +82,12 @@ public class DropColumnsTest {
         // build a pipeline that concats two columns
         DropColumns dc = new DropColumns()
                 .setInputCols( new String[] {"StringColumn1", "StringColumn2"} );
-        Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { dc });
+        Pipeline pipeline = new Pipeline().setStages( new PipelineStage[] { dc });
+        
+        // Save the pipeline without training it
+        pipeline.write().overwrite().save(outputModelLocation);
+        pipeline = Pipeline.load(outputModelLocation);
+        
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk

@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -95,8 +96,12 @@ public class FloorCeilingTest {
                 .setInputCols( new String[] {"Numeric1", "Numeric2", "Numeric3"} )
                 .setLowerPercentile(0.10)
                 .setUpperPercentile(0.90);
-        Pipeline pipeline = new Pipeline().setStages(
-            new PipelineStage[] { fc });
+        Pipeline pipeline = new Pipeline().setStages( new PipelineStage[] { fc });
+        
+        // Save the pipeline without training it
+        pipeline.write().overwrite().save(outputModelLocation);
+        pipeline = Pipeline.load(outputModelLocation);
+        
         PipelineModel model = pipeline.fit(data);
        
         // Save and load pipeline to disk
