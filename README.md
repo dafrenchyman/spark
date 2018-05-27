@@ -11,7 +11,7 @@ Pipelines:
 * XGBoostEstimator - Just using the Scala one, but added all the missing "sets" and "gets"
 
 Params:
-* MapParam - When the built-in params don't cut it
+* MapParam - When you just need to use a Map
 
 Misc:
 * FindContinuousColumns - Dataset<Row> helper
