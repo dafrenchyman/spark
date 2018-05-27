@@ -138,10 +138,10 @@ public class DropColumns extends Transformer implements Serializable, DefaultPar
         return new DropColumnsReader();
     }
 
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$DropColumns$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
-    
+        
     public StringArrayParam inputCols() {
         return new StringArrayParam(this, "inputCols", "Columns to be dropped");
     }

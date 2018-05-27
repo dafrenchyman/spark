@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 /**
@@ -45,9 +46,11 @@ public class DropColumnsReader extends MLReader<DropColumns> implements Serializ
     public DropColumns load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
-        Row input = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        List<String> listInputColumns = input.getList(0);
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
+        
+        List<String> listInputColumns = data.select("inputCols").head().getList(0);
         String[] inputColumns = listInputColumns.toArray(new String[listInputColumns.size()]);
+        
         DropColumns transformer = new DropColumns()
                 .setInputCols(inputColumns);
         DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);

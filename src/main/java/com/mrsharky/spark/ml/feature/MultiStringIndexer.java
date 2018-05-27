@@ -152,14 +152,6 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
         return DataTypes.createStructType(newFields);
     }
     
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
-        this._inputCols = stringArrayParam;
-    }
-    
-    public void org$apache$spark$ml$param$shared$HasOutputCols$_setter_$outputCols_$eq(StringArrayParam stringArrayParam) {
-        this._outputCols = stringArrayParam;
-    }
-    
     @Override
     public PipelineModel fit(Dataset<?> dataset) {
         StructType structType = dataset.schema();
@@ -216,6 +208,18 @@ public class MultiStringIndexer extends Estimator<PipelineModel> implements Seri
     
     public MultiStringIndexer load(String path) {
         return ((MultiStringIndexerReader)read()).load(path);
+    }
+    
+    public void com$mrsharky$spark$ml$feature$MultiStringIndexer$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+        this._inputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$MultiStringIndexer$_setter_$outputCols_$eq(StringArrayParam stringArrayParam) {
+        this._outputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$MultiStringIndexer$_setter_$handleInvalid_$eq(Param<String> param) {
+        this._handleInvalid = param;
     }
     
     public StringArrayParam inputCols() {

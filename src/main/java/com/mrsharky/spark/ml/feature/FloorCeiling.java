@@ -87,12 +87,22 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         return this;
     }
     
+    /**
+     * Value must be between [0, 1]
+     * @param value
+     * @return 
+     */
     public FloorCeiling setLowerPercentile(double value) {
         _lowerPercentile = lowerPercentile();
         this.set(_lowerPercentile, value);
         return this;
     }
     
+    /**
+     * Value must be between [0, 1]
+     * @param value
+     * @return 
+     */
     public FloorCeiling setUpperPercentile(double value) {
         _upperPercentile = upperPercentile();
         this.set(_upperPercentile, value);
@@ -109,8 +119,10 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         String[] columns = this.getInputCols();
         double[] floors = new double[columns.length];
         double[] ceilings = new double[columns.length];
-        double lowerPerc = this.getLowerPercentile();
-        double upperPerc = this.getUpperPercentile();
+        double lowerPerc = this.getLowerPercentile()*100;
+        double upperPerc = this.getUpperPercentile()*100;
+        lowerPerc = lowerPerc < 0   ? 0   : lowerPerc;
+        upperPerc = upperPerc > 100 ? 100 : upperPerc;
         double[] min = new double[columns.length];
         double[] max = new double[columns.length];
         
@@ -149,8 +161,8 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
             
             Percentile perc = new Percentile();
             perc.setData(valuesDouble);
-            floors[i] = perc.evaluate(lowerPerc*100);
-            ceilings[i] = perc.evaluate(upperPerc*100);
+            floors[i] = perc.evaluate(lowerPerc);
+            ceilings[i] = perc.evaluate(upperPerc);
             if (floors[i] == ceilings[i]) {
                 floors[i] = currMin;
                 ceilings[i] = currMax;
@@ -193,15 +205,15 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         return ((FloorCeilingReader)read()).load(path);
     }
     
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
     
-    public void org$apache$spark$ml$param$shared$HasLowerPercentile$_setter_$lowerPercentiles_$eq(DoubleParam doubleParam) {
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$lowerPercentiles_$eq(DoubleParam doubleParam) {
         this._lowerPercentile = doubleParam;
     }
     
-    public void org$apache$spark$ml$param$shared$HasUpperPercentile$_setter_$upperPercentiles_$eq(DoubleParam doubleParam) {
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$upperPercentiles_$eq(DoubleParam doubleParam) {
         this._upperPercentile = doubleParam;
     }
     

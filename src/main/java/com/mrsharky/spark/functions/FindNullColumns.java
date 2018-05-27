@@ -55,13 +55,13 @@ public class FindNullColumns {
     public FindNullColumns (Dataset<Row> inputData) {
         StructField[] fields = inputData.schema().fields();
         
-        // Check which columns are strings that contain only numbers
-        FindNullColumns_Mapper mtin = new FindNullColumns_Mapper();
-        JavaRDD<Row> testIfNumber = inputData.toJavaRDD().mapPartitions(c -> mtin.call(c));
-        FindNullColumns_Combiner mtinc = new FindNullColumns_Combiner();
-        Row result = testIfNumber.aggregate(RowFactory.create(), mtinc, mtinc);
+        // Check which columns contain only null values
+        FindNullColumns_Mapper fncm = new FindNullColumns_Mapper();
+        JavaRDD<Row> testIfNull = inputData.toJavaRDD().mapPartitions(c -> fncm.call(c));
+        FindNullColumns_Combiner fncc = new FindNullColumns_Combiner();
+        Row result = testIfNull.aggregate(RowFactory.create(), fncc, fncc);
         
-        // Find the columns that where always NULL
+        // From the aggregation "true" == null, so loop through and get all the null column names
         List<String> allwaysNullColumns = new ArrayList<String>();
         for (int counter = 0; counter < fields.length; counter++) {
             StructField currField = fields[counter];

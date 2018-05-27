@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 /**
@@ -52,14 +53,11 @@ public class TopCategoriesReader extends MLReader<TopCategories> implements Seri
     public TopCategories load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
-        // Get the columns
-        Row inputCols = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        List<String> columnNames = inputCols.getList(0);
-        
-        // Get the numCat
-        Row numCatRow = sparkSession().read().parquet(dataPath).select("numCategories").head();
-        List<Integer> numCatList = numCatRow.getList(0);
+        List<String> columnNames = data.select("inputCols").head().getList(0);
+
+        List<Integer> numCatList = data.select("numCategories").head().getList(0);
         int[] numCat = toPrimitive(numCatList.toArray(new Integer[numCatList.size()]));
         
         // Set the estimator

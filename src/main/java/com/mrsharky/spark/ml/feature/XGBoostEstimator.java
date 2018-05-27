@@ -435,6 +435,63 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
         return this;
     }
     
+    public XGBoostEstimator setWeightCol(String weightCol) {
+        this.set(this.weightCol(), weightCol);
+        return this;
+    }
+    
+    /**
+     * objective [default=reg:linear]
+     * "reg:linear" --linear regression
+     * "reg:logistic" --logistic regression
+     * "binary:logistic" --logistic regression for binary classification, output probability
+     * "binary:logitraw" --logistic regression for binary classification, output score before logistic transformation
+     * "gpu:reg:linear", "gpu:reg:logistic", "gpu:binary:logistic", gpu:binary:logitraw" --versions of the corresponding objective functions evaluated on the GPU; note that like the GPU histogram algorithm, they can only be used when the entire training session uses the same dataset
+     * "count:poisson" --poisson regression for count data, output mean of poisson distribution
+     * max_delta_step is set to 0.7 by default in poisson regression (used to safeguard optimization)
+     * "survival:cox" --Cox regression for right censored survival time data (negative values are considered right censored). Note that predictions are returned on the hazard ratio scale (i.e., as HR = exp(marginal_prediction) in the proportional hazard function h(t) = h0(t) * HR).
+     * "multi:softmax" --set XGBoost to do multiclass classification using the softmax objective, you also need to set num_class(number of classes)
+     * "multi:softprob" --same as softmax, but output a vector of ndata * nclass, which can be further reshaped to ndata, nclass matrix. The result contains predicted probability of each data point belonging to each class.
+     * "rank:pairwise" --set XGBoost to do ranking task by minimizing the pairwise loss
+     * "reg:gamma" --gamma regression with log-link. Output is a mean of gamma distribution. It might be useful, e.g., for modeling insurance claims severity, or for any outcome that might be gamma-distributed
+     * "reg:tweedie" --Tweedie regression with log-link. It might be useful, e.g., for modeling total loss in insurance, or for any outcome that might be Tweedie-distributed.
+     * @param objective
+     * @return 
+     */
+    public XGBoostEstimator setObjective(String objective) {
+        this.set(this.objective(), objective);
+        return this;
+    }
+    
+    /**
+     * evaluation metrics for validation data, a default metric will be assigned according to objective (rmse for regression, and error for classification, mean average precision for ranking )
+     * User can add multiple evaluation metrics, for python user, remember to pass the metrics in as list of parameters pairs instead of map, so that latter 'eval_metric' won't override previous one
+     * The choices are listed below:
+     * "rmse": root mean square error
+     * "mae": mean absolute error
+     * "logloss": negative log-likelihood
+     * "error": Binary classification error rate. It is calculated as #(wrong cases)/#(all cases). For the predictions, the evaluation will regard the instances with prediction value larger than 0.5 as positive instances, and the others as negative instances.
+     * "error@t": a different than 0.5 binary classification threshold value could be specified by providing a numerical value through 't'.
+     * "merror": Multiclass classification error rate. It is calculated as #(wrong cases)/#(all cases).
+     * "mlogloss": Multiclass logloss
+     * "auc": Area under the curve for ranking evaluation.
+     * "ndcg":Normalized Discounted Cumulative Gain
+     * "map":Mean average precision
+     * "ndcg@n","map@n": n can be assigned as an integer to cut off the top positions in the lists for evaluation.
+     * "ndcg-","map-","ndcg@n-","map@n-": In XGBoost, NDCG and MAP will evaluate the score of a list without any positive samples as 1. By adding "-" in the evaluation metric XGBoost will evaluate these score as 0 to be consistent under some conditions. training repeatedly
+     * "poisson-nloglik": negative log-likelihood for Poisson regression
+     * "gamma-nloglik": negative log-likelihood for gamma regression
+     * "cox-nloglik": negative partial log-likelihood for Cox proportional hazards regression
+     * "gamma-deviance": residual deviance for gamma regression
+     * "tweedie-nloglik": negative log-likelihood for Tweedie regression (at a specified value of the tweedie_variance_power parameter)
+     * @param evalMetric
+     * @return 
+     */
+    public XGBoostEstimator setEvalMetric(String evalMetric) {
+        this.set(this.evalMetric(), evalMetric);
+        return this;
+    }
+    
     // Getters
     public String  getBoosterType()           { return                  this.get(this.boosterType()).get(); }
     public double  getEta()                   { return (double)         this.get(this.eta()).get(); }
@@ -469,6 +526,9 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
     public String  getCheckpointPath()        { return                  this.get(this.checkpointPath()).get(); }
     public int     getCheckpointInterval()    { return (int)            this.get(this.checkpointInterval()).get(); }
     public long    getSeed()                  { return (long)           this.get(this.seed()).get(); }
+    public String  getWeightCol()             { return                  this.get(this.weightCol()).get(); }
+    public String  getObjective()             { return                  this.get(this.objective()).get(); }
+    public String  getEvalMetric()            { return                  this.get(this.evalMetric()).get(); }
       
     public XGBoostEstimator(String uid, Map<String, Object> xgboostParams) {
         super(uid, xgboostParams);
@@ -530,9 +590,12 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
             if (!this.get(this.timeoutRequestWorkers()).isEmpty()) { copied.setTimeoutRequestWorkers(this.getTimeoutRequestWorkers()); }
             if (!this.get(this.treeMethod()).isEmpty())            { copied.setTreeMethod(           this.getTreeMethod());            }
             if (!this.get(this.useExternalMemory()).isEmpty())     { copied.setUseExternalMemory(    this.getUseExtrernalMemory());    }
+            if (!this.get(this.weightCol()).isEmpty())             { copied.setWeightCol(            this.getWeightCol());             }
+            if (!this.get(this.objective()).isEmpty())             { copied.setObjective(            this.getObjective());             }
+            if (!this.get(this.evalMetric()).isEmpty())            { copied.setEvalMetric(           this.getEvalMetric());            }
         } catch (Exception ex) {
             Logger.getLogger(XGBoostEstimator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }       
         return copied;
     } 
 

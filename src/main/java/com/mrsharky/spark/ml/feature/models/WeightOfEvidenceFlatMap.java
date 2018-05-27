@@ -64,6 +64,7 @@ public class WeightOfEvidenceFlatMap implements Serializable, FlatMapFunction<It
                     Object currValue = row.get(structCounter);
                     rowValues.add(currValue);
                     if (_lookup.containsKey(fieldName)) {
+                        currValue = currValue == null ? "null" : currValue;
                         Double woe = null;
                         if (_lookup.get(fieldName).keySet().contains(currValue.toString())) {
                             woe = _lookup.get(fieldName).get(currValue.toString());

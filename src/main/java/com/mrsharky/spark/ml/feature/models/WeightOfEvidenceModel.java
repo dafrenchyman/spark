@@ -176,8 +176,16 @@ public class WeightOfEvidenceModel extends Model<WeightOfEvidenceModel> implemen
         write().saveImpl(path);
     }
 
-    public void com$mrsharky$spark$ml$feature$models$WeightOfEvidenceModel$_setter_$lookup_$eq(MapParam stringArrayParam) {
-        this._lookup = stringArrayParam;
+    public void com$mrsharky$spark$ml$feature$models$WeightOfEvidenceModel$_setter_$lookup_$eq(MapParam mapParam) {
+        this._lookup = mapParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$models$WeightOfEvidenceModel$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+        this._inputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$models$WeightOfEvidenceModel$_setter_$outputCols_$eq(StringArrayParam stringArrayParam) {
+        this._outputCols = stringArrayParam;
     }
     
     public StringArrayParam inputCols() {

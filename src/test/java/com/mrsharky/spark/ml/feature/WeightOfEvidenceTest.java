@@ -79,7 +79,7 @@ public class WeightOfEvidenceTest {
         Dataset<Row> data = spark.read().format("csv").option("header", true)
                 .load("./data/testData.csv");
         
-        data = data.select("StringColumn3", "Numeric3", "Boolean2");
+        data = data.select("StringColumn3", "StringColumn4", "Numeric3", "Boolean2");
         data = data.withColumn("Numeric3_tmp", col("Numeric3").cast(IntegerType))
                 .drop("Numeric3").withColumnRenamed("Numeric3_tmp", "Numeric3");
         data = data.withColumn("Boolean2_tmp", col("Boolean2").cast(IntegerType))
@@ -90,7 +90,7 @@ public class WeightOfEvidenceTest {
         
         // build a pipeline that concats two columns
         WeightOfEvidence msi = new WeightOfEvidence()
-                .setInputCols( new String[] {"StringColumn3", "Numeric3"} )
+                .setInputCols( new String[] {"StringColumn3", "StringColumn4", "Numeric3"} )
                 .setMinObs(2)
                 .setBooleanResponseCol("Boolean2");
         Pipeline pipeline = new Pipeline().setStages(new PipelineStage[] { msi });

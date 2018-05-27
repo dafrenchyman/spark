@@ -23,7 +23,6 @@
  */
 package com.mrsharky.spark.ml.feature;
 
-import com.mrsharky.spark.ml.feature.models.FloorCeilingModel;
 import com.mrsharky.spark.ml.feature.models.WeightOfEvidenceModel;
 import java.io.IOException;
 import java.io.Serializable;
@@ -133,7 +132,9 @@ public class WeightOfEvidence extends Estimator<WeightOfEvidenceModel> implement
     
     @Override
     public StructType transformSchema(StructType oldSchema) {
-        return oldSchema;
+        return new WeightOfEvidenceModel()
+                .setInputCols(this.getInputCols())
+                .setOutputCols(this.getOutputCols()).transformSchema(oldSchema);
     }
     
     @Override
@@ -192,6 +193,7 @@ public class WeightOfEvidence extends Estimator<WeightOfEvidenceModel> implement
             
             for (Row currRow : values) {
                 String currValue = currRow.getString(0);
+                currValue = currValue == null ? "null" : currValue;
                 Double woe = (Double) currRow.get(1);
                 results.get(column).put(currValue, woe);
             }
@@ -231,8 +233,16 @@ public class WeightOfEvidence extends Estimator<WeightOfEvidenceModel> implement
         return ((WeightOfEvidenceReader)read()).load(path);
     }
     
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$WeightOfEvidence$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$WeightOfEvidence$_setter_$outputCols_$eq(StringArrayParam stringArrayParam) {
+        this._outputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$WeightOfEvidence$_setter_$booleanResponseCol_$eq(Param<String> stringArrayParam) {
+        this._booleanResponseCol = stringArrayParam;
     }
       
     public StringArrayParam inputCols() {

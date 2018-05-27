@@ -48,18 +48,18 @@ public class FindNullColumns_Mapper implements Serializable, FlatMapFunction<Ite
         long counter = 0;
         StructField[] structFields = null;
         List<Integer> fieldsToProcess = null;
-        Boolean[] finalValues = new Boolean[0];
+        Boolean[] finalValuesAreNull = new Boolean[0];
         while (lineIterator.hasNext()) {
             Row newLine = lineIterator.next();
             
             if (counter == 0) {
                 structFields = newLine.schema().fields();
-                finalValues = new Boolean[structFields.length];
+                finalValuesAreNull = new Boolean[structFields.length];
                 fieldsToProcess = new ArrayList<Integer>();
                 
                 for (int structCounter = 0; structCounter < structFields.length; structCounter++ ) {
                     fieldsToProcess.add(structCounter);
-                    finalValues[structCounter] = true;
+                    finalValuesAreNull[structCounter] = true;
                 }
             }
             counter++;
@@ -70,13 +70,17 @@ public class FindNullColumns_Mapper implements Serializable, FlatMapFunction<Ite
                 Integer currField = itr.next();
                 Object currValue = newLine.get(currField);
                 if (currValue != null) {
-                    finalValues[currField] = false;
+                    finalValuesAreNull[currField] = false;
                     itr.remove();
                 }
-            }  
+            }
+            
+            if (counter % 10000 == 0) {
+                System.out.println(FindNullColumns_Mapper.class.getName() + " - Processing: " + counter);
+            }
         }
         System.out.println(FindNullColumns_Mapper.class.getName() + " - Finished: " + counter);
-        rows.add(RowFactory.create(finalValues));
+        rows.add(RowFactory.create(finalValuesAreNull));
         return rows.iterator();  
     }
 }

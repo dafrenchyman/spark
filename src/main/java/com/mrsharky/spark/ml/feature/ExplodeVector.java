@@ -172,11 +172,11 @@ public class ExplodeVector extends Transformer implements Serializable, DefaultP
         return new ExplodeVectorReader();
     }
 
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$ExplodeVector$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
     
-    public void org$apache$spark$ml$param$shared$HasInputColsSize$_setter_$inputColsSize_$eq(IntArrayParam intArrayParam) {
+    public void com$mrsharky$spark$ml$feature$ExplodeVector$_setter_$inputColsSize_$eq(IntArrayParam intArrayParam) {
         this._inputColsSize = intArrayParam;
     }
     

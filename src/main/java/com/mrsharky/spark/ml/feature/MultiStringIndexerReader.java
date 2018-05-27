@@ -55,16 +55,9 @@ public class MultiStringIndexerReader extends MLReader<MultiStringIndexer> imple
         String dataPath = new Path(path, "data").toString();
         Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
-        // Get the columns
-        Row inputCols = data.select("inputCols").head();
-        List<String> inputColumnNames = inputCols.getList(0);
-        
-        Row outputCols = data.select("outputCols").head();
-        List<String> outputColumnNames = outputCols.getList(0);
-        
-        // handleInvalid
-        Row handleInvalidRow = data.select("handleInvalid").head();
-        String handleInvalid = handleInvalidRow.getString(0);
+        List<String> inputColumnNames = data.select("inputCols").head().getList(0);
+        List<String> outputColumnNames = data.select("outputCols").head().getList(0);
+        String handleInvalid = data.select("handleInvalid").head().getString(0);
         
         // Set the estimator
         MultiStringIndexer transformer = new MultiStringIndexer()

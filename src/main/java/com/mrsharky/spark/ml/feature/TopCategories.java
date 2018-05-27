@@ -122,14 +122,6 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
         return oldSchema;
     }
     
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
-        this._inputCols = stringArrayParam;
-    }
-    
-    public void org$apache$spark$ml$param$shared$HasNumCategories$_setter_$numCategories_$eq(IntArrayParam intArrayParam) {
-        this._numCategories = intArrayParam;
-    }
-    
     @Override
     public TopCategoriesModel fit(Dataset<?> dataset) {
         StructType structType = dataset.schema();
@@ -231,6 +223,14 @@ public class TopCategories extends Estimator<TopCategoriesModel> implements Seri
     
     public TopCategories load(String path) {
         return ((TopCategoriesReader)read()).load(path);
+    }
+    
+    public void com$mrsharky$spark$ml$feature$TopCategories$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+        this._inputCols = stringArrayParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$TopCategories$_setter_$numCategories_$eq(IntArrayParam intArrayParam) {
+        this._numCategories = intArrayParam;
     }
     
     public StringArrayParam inputCols() {

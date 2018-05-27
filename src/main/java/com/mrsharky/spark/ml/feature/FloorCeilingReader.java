@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 /**
@@ -46,14 +47,11 @@ public class FloorCeilingReader extends MLReader<FloorCeiling> implements Serial
     public FloorCeiling load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
-        Row inputCols = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        List<String> columnNames = inputCols.getList(0);
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
-        Row inputLowerPercentile = sparkSession().read().parquet(dataPath).select("lowerPercentile").head();
-        double lowerPercentile = inputLowerPercentile.getDouble(0);
-        
-        Row inputUpperPercentile = sparkSession().read().parquet(dataPath).select("upperPercentile").head();
-        double upperPercentile = inputUpperPercentile.getDouble(0);
+        List<String> columnNames = data.select("inputCols").head().getList(0);
+        double lowerPercentile = data.select("lowerPercentile").head().getDouble(0);        
+        double upperPercentile = data.select("upperPercentile").head().getDouble(0);
         
         FloorCeiling transformer = new FloorCeiling()
                 .setInputCols(columnNames)

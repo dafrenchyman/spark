@@ -65,8 +65,11 @@ public class ConcatColumns extends Transformer implements Serializable, ConcatCo
     }
     
     // Getters 
+    @Override
     public String[] getInputCols() { return get(_inputCols).get(); }
+    @Override
     public String getOutputCol()   { return get(_outputCol).get(); }
+    @Override
     public String getConcatValue() { return get(_concatValue).get(); }
     
     // Setters
@@ -165,17 +168,17 @@ public class ConcatColumns extends Transformer implements Serializable, ConcatCo
     }
 
     @Override
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
 
     @Override
-    public void org$apache$spark$ml$param$shared$HasOutputCol$_setter_$outputCol_$eq(Param param) {
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$outputCol_$eq(Param param) {
         this._outputCol = param;
     }
     
     @Override
-    public void org$apache$spark$ml$param$shared$HasConcatValue$_setter_$concatValue_$eq(Param param) {
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$concatValue_$eq(Param param) {
         this._concatValue = param;
     }
     

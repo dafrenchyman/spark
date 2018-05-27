@@ -43,15 +43,14 @@ public class UniqueCountsCombiner implements Serializable, Function2<Row, Row, R
     public Row call(Row row1, Row row2) throws Exception {
         List<Object> list = new ArrayList<Object>();
         try {
-            // total
-            // unique
+            // total, unique
             long totalCounts = 0;   
 
             totalCounts += (long) row1.get(0);
             totalCounts += (long) row2.get(0);
 
-            list.add(totalCounts);
-            list.add(1L);
+            list.add(totalCounts);  // Total 
+            list.add(1L);           // Unique
         } catch (Exception ex) {
             System.out.println("ERROR: " + ex.getMessage());
             System.err.println("ERROR: " + ex.getMessage());

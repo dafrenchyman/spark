@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import scala.collection.JavaConverters;
 
@@ -52,9 +53,10 @@ public class TopCategoriesModelReader extends MLReader<TopCategoriesModel> imple
     public TopCategoriesModel load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
         // Lookup
-        Row lookupRow = sparkSession().read().parquet(dataPath).select("lookup").head();
+        Row lookupRow = data.select("lookup").head();
         Map lookupMap = JavaConverters.mapAsJavaMapConverter(lookupRow.getMap(0)).asJava();
         TopCategoriesModel transformer = new TopCategoriesModel()
                 .setLookupMap(lookupMap);

@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.javatuples.Pair;
 
@@ -48,11 +49,10 @@ public class ExplodeVectorReader extends MLReader<ExplodeVector> implements Seri
     public ExplodeVector load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
-        Row inputCols = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        List<String> columnNames = inputCols.getList(0);
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
-        Row inputColsSize = sparkSession().read().parquet(dataPath).select("inputColsSize").head();
-        List<Integer> columnSize = inputColsSize.getList(0);
+        List<String> columnNames = data.select("inputCols").head().getList(0);
+        List<Integer> columnSize = data.select("inputColsSize").head().getList(0);
         
         // Create a Pair object to submit to the class for construction
         List<Pair<String, Integer>> pairs = new ArrayList<Pair<String, Integer>>();

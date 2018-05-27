@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 /**
@@ -47,15 +48,14 @@ public class FloorCeilingModelReader extends MLReader<FloorCeilingModel> impleme
     public FloorCeilingModel load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
-        Row inputCols = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        List<String> columnNames = inputCols.getList(0);
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
-        Row floorsRow = sparkSession().read().parquet(dataPath).select("floors").head();
-        List<Double> floorsList = floorsRow.getList(0);
+        List<String> columnNames = data.select("inputCols").head().getList(0);
+        
+        List<Double> floorsList = data.select("floors").head().getList(0);
         Double[] floors = floorsList.toArray(new Double[floorsList.size()]);
         
-        Row ceilsRow = sparkSession().read().parquet(dataPath).select("ceils").head();
-        List<Double> ceilsList = ceilsRow.getList(0);
+        List<Double> ceilsList = data.select("ceils").head().getList(0);
         Double[] ceils = ceilsList.toArray(new Double[ceilsList.size()]);
         
         FloorCeilingModel transformer = new FloorCeilingModel()

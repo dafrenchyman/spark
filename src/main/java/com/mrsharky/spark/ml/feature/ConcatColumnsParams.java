@@ -33,9 +33,9 @@ import org.apache.spark.ml.param.StringArrayParam;
  */
 public interface ConcatColumnsParams extends Params {
 
-    public void org$apache$spark$ml$param$shared$HasInputCols$_setter_$inputCols_$eq(StringArrayParam stringArrayParam);
-    public void org$apache$spark$ml$param$shared$HasOutputCol$_setter_$outputCol_$eq(Param param);
-    public void org$apache$spark$ml$param$shared$HasConcatValue$_setter_$concatValue_$eq(Param param);
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$inputCols_$eq(StringArrayParam stringArrayParam);
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$outputCol_$eq(Param param);
+    public void com$mrsharky$spark$ml$feature$ConcatColumns$_setter_$concatValue_$eq(Param param);
     
     public StringArrayParam inputCols();
     public Param<String> outputCol();

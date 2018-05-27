@@ -40,13 +40,14 @@ import org.apache.spark.sql.RowFactory;
  */
 public class Mapper_ReduceTotalCount implements Serializable, FlatMapFunction<Iterator<Row>, Row> {
     
-    private Map<String, Map<Object, Long>> _index;
+    private final Map<String, Map<Object, Long>> _index;
     private final int _maxTotal;
     private final Integer _totalColumnLocation;
     
     public Mapper_ReduceTotalCount (int maxTotal) {
         _index = new HashMap<String, Map<Object, Long>>();
-        _maxTotal = maxTotal*2;
+        // doubling the maxTotal (not perfect) as maybe some the "max" ones are more spread out across the different partitions
+        _maxTotal = maxTotal*2; 
         _totalColumnLocation = null;
     }
     
@@ -82,6 +83,10 @@ public class Mapper_ReduceTotalCount implements Serializable, FlatMapFunction<It
                 _index.get(varName).put(varValue, currCount + 1L);
             }
             rowsIn++;
+            
+            if (rowsIn % 10000 == 0) {
+                System.out.println(Mapper_ReduceTotalCount.class.getName() + " - Processing: " + rowsIn);
+            }
         }
         
         // Loop through each variable
