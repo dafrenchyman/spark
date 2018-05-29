@@ -70,7 +70,8 @@ public class WeightOfEvidenceModelReader extends MLReader<WeightOfEvidenceModel>
                     .setOutputCols(outputCol)
                     .setLookup(lookupMap);
             
-            DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+            DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+            //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
             return transformer;
         } catch (Exception ex) {
             Logger.getLogger(WeightOfEvidenceModelReader.class.getName()).log(Level.SEVERE, null, ex);

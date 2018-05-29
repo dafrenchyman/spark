@@ -62,7 +62,8 @@ public class FloorCeilingModelReader extends MLReader<FloorCeilingModel> impleme
                 .setInputCols(columnNames)
                 .setFloors(ArrayUtils.toPrimitive(floors))
                 .setCeils(ArrayUtils.toPrimitive(ceils));
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

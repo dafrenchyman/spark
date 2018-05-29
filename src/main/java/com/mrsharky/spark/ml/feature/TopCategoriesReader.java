@@ -64,7 +64,8 @@ public class TopCategoriesReader extends MLReader<TopCategories> implements Seri
         TopCategories transformer = new TopCategories()
                 .setInputCols(columnNames)
                 .setNumCategories(numCat);
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

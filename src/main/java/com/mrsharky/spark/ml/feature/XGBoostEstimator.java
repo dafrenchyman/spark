@@ -550,7 +550,7 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
         return super.fit(dataset);
     }
 
-    @Override
+    /*@Override
     public ml.dmlc.xgboost4j.scala.spark.XGBoostEstimator copy(ParamMap arg0) {
         XGBoostEstimator copied = null;
         try {
@@ -595,9 +595,9 @@ public class XGBoostEstimator extends ml.dmlc.xgboost4j.scala.spark.XGBoostEstim
             if (!this.get(this.evalMetric()).isEmpty())            { copied.setEvalMetric(           this.getEvalMetric());            }
         } catch (Exception ex) {
             Logger.getLogger(XGBoostEstimator.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+        } 
         return copied;
-    } 
+    }*/
 
     
 }

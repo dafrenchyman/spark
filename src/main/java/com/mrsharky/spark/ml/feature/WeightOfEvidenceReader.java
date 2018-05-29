@@ -63,7 +63,8 @@ public class WeightOfEvidenceReader extends MLReader<WeightOfEvidence> implement
                     .setOutputCols(outColumnNames)
                     .setBooleanResponseCol(booleanResponse)
                     .setMinObs(minObs);
-            DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+            DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+            //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
             return transformer;
         } catch (Exception ex) {
             Logger.getLogger(WeightOfEvidenceReader.class.getName()).log(Level.SEVERE, null, ex);

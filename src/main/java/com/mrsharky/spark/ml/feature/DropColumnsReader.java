@@ -53,7 +53,8 @@ public class DropColumnsReader extends MLReader<DropColumns> implements Serializ
         
         DropColumns transformer = new DropColumns()
                 .setInputCols(inputColumns);
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

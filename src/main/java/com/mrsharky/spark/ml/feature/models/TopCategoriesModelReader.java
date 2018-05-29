@@ -61,7 +61,8 @@ public class TopCategoriesModelReader extends MLReader<TopCategoriesModel> imple
         TopCategoriesModel transformer = new TopCategoriesModel()
                 .setLookupMap(lookupMap);
                     
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

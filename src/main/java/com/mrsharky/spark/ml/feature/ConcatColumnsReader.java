@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.ml.util.DefaultParamsReader$;
 import org.apache.spark.ml.util.MLReader;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 /**
@@ -45,16 +46,21 @@ public class ConcatColumnsReader extends MLReader<ConcatColumns> implements Seri
     public ConcatColumns load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
-        Row input = sparkSession().read().parquet(dataPath).select("inputCols").head();
-        Row output = sparkSession().read().parquet(dataPath).select("outputCol").head();
-        Row concatValue = sparkSession().read().parquet(dataPath).select("concatValue").head();
-        List<String> listInputColumns = input.getList(0);
+        Dataset<Row> data = sparkSession().read().parquet(dataPath);
+        
+        List<String> listInputColumns = data.select("inputCols").head().getList(0);
         String[] inputColumns = listInputColumns.toArray(new String[listInputColumns.size()]);
+        
+        String output = data.select("outputCol").head().getString(0);
+        String concatValue = data.select("concatValue").head().getString(0);
+        
+        
         ConcatColumns transformer = new ConcatColumns()
                 .setInputCols(inputColumns)
-                .setOutputCol(output.getString(0))
-                .setConcatValue(concatValue.getString(0));
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+                .setOutputCol(output)
+                .setConcatValue(concatValue);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

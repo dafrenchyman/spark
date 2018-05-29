@@ -61,7 +61,8 @@ public class ExplodeVectorReader extends MLReader<ExplodeVector> implements Seri
         }
         ExplodeVector transformer = new ExplodeVector()
                 .setInputCols(pairs);
-        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+        DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
+        //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;
     }
 }

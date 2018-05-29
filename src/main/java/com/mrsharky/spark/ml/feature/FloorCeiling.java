@@ -121,8 +121,8 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         double[] ceilings = new double[columns.length];
         double lowerPerc = this.getLowerPercentile()*100;
         double upperPerc = this.getUpperPercentile()*100;
-        lowerPerc = lowerPerc < 0   ? 0   : lowerPerc;
-        upperPerc = upperPerc > 100 ? 100 : upperPerc;
+        lowerPerc = lowerPerc <= 0  ? 0.01 : lowerPerc;
+        upperPerc = upperPerc > 100 ? 100  : upperPerc;
         double[] min = new double[columns.length];
         double[] max = new double[columns.length];
         

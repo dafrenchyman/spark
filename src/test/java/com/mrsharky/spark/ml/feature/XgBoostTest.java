@@ -110,12 +110,15 @@ public class XgBoostTest {
             .setMaxCategories(4);
         data = vi.fit(data).transform(data);
         
+        //Map<String, Object> params = new HashMap<String, Object>();
+        //params.put("num_rounds", 100);
+        
         // XgBoost
         XGBoostEstimator xgb = new XGBoostEstimator(/*toScalaMap(params)*/)
-                .setRound(50)
+                .setRound(10)
                 .setSeed(1234L)
                 .setBoosterType("gbtree")
-                .setMaxDepth(10)
+                .setMaxDepth(4)
                 .setNormalizeType("forest")
                 .setFeaturesCol("indexedFeatures")
                 .setPredictionCol("prediction")
@@ -146,7 +149,8 @@ public class XgBoostTest {
         boosterTypes.add("dart");
         
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(xgb.boosterType(), JavaScalaUtils.JavaListToScalaIterable(boosterTypes) )
+                //.addGrid(xgb.boosterType(), JavaScalaUtils.JavaListToScalaIterable(boosterTypes) )
+                .addGrid(xgb.round(), new int[]{1,2,3,4,5,6,7})
                 .build();   
         
         CrossValidator crossVal = new CrossValidator()
@@ -155,11 +159,16 @@ public class XgBoostTest {
                     new RegressionEvaluator()
                             .setPredictionCol("prediction")
                             .setLabelCol("indexedLabel") )
-            .setEstimatorParamMaps(paramGrid).setNumFolds(3);
+            .setEstimatorParamMaps(paramGrid).setNumFolds(2);
         CrossValidatorModel cvModel = crossVal.fit(data);
-        
+                
         Dataset<Row> results = cvModel.transform(data);
         results.show(1000);
+        
+        double[] avgMetrics = cvModel.avgMetrics();
+        for (double currMet : avgMetrics) {
+            System.out.println("Model: " + currMet);
+        }
         
     }
 }
