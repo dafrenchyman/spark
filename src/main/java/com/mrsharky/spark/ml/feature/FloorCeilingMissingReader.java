@@ -23,6 +23,7 @@
  */
 package com.mrsharky.spark.ml.feature;
 
+import static com.mrsharky.spark.utilities.DatasetUtils.ColumnExists;
 import java.io.Serializable;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
@@ -36,27 +37,39 @@ import org.apache.spark.sql.Row;
  *
  * @author Julien Pierret
  */
-public class FloorCeilingReader extends MLReader<FloorCeiling> implements Serializable {
+public class FloorCeilingMissingReader extends MLReader<FloorCeilingMissing> implements Serializable {
     
-    private String className = FloorCeiling.class.getName();
+    private String className = FloorCeilingMissing.class.getName();
     
     public String getClassName() { return className; }
     public void setClassName(String className) { this.className = className; }
     
     @Override
-    public FloorCeiling load(String path) {
+    public FloorCeilingMissing load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
         Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
         List<String> columnNames = data.select("inputCols").head().getList(0);
-        double lowerPercentile = data.select("lowerPercentile").head().getDouble(0);        
-        double upperPercentile = data.select("upperPercentile").head().getDouble(0);
         
-        FloorCeiling transformer = new FloorCeiling()
-                .setInputCols(columnNames)
-                .setLowerPercentile(lowerPercentile)
-                .setUpperPercentile(upperPercentile);
+        FloorCeilingMissing transformer = new FloorCeilingMissing()
+                .setInputCols(columnNames);
+        
+        if (!data.select("lowerPercentile").head().isNullAt(0)) {
+            double lowerPercentile = data.select("lowerPercentile").head().getDouble(0);
+            transformer = transformer.setLowerPercentile(lowerPercentile);
+        }
+        
+        if (!data.select("upperPercentile").head().isNullAt(0)) {
+            double upperPercentile = data.select("upperPercentile").head().getDouble(0);
+            transformer = transformer.setUpperPercentile(upperPercentile);
+        }
+        
+        if (!data.select("missingPercentile").head().isNullAt(0)) {
+            double missingPercentile = data.select("missingPercentile").head().getDouble(0);
+            transformer = transformer.setMissingPercentile(missingPercentile);
+        }
+        
         DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
         //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
         return transformer;

@@ -23,6 +23,8 @@
  */
 package com.mrsharky.spark.ml.feature.models;
 
+import static com.mrsharky.spark.utilities.DatasetUtils.ColumnExists;
+import com.mrsharky.utilites.VersionHelper;
 import java.io.Serializable;
 import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
@@ -37,33 +39,46 @@ import org.apache.spark.sql.Row;
  *
  * @author Julien Pierret
  */
-public class FloorCeilingModelReader extends MLReader<FloorCeilingModel> implements Serializable {
+public class FloorCeilingMissingModelReader extends MLReader<FloorCeilingMissingModel> implements Serializable {
     
-    private String className = FloorCeilingModel.class.getName();
+    private String className = FloorCeilingMissingModel.class.getName();
     
     public String getClassName() { return className; }
     public void setClassName(String className) { this.className = className; }
     
     @Override
-    public FloorCeilingModel load(String path) {
+    public FloorCeilingMissingModel load(String path) {
         DefaultParamsReader.Metadata metadata = DefaultParamsReader$.MODULE$.loadMetadata(path, sc(), className);
         String dataPath = new Path(path, "data").toString();
         Dataset<Row> data = sparkSession().read().parquet(dataPath);
         
         List<String> columnNames = data.select("inputCols").head().getList(0);
         
-        List<Double> floorsList = data.select("floors").head().getList(0);
-        Double[] floors = floorsList.toArray(new Double[floorsList.size()]);
+        FloorCeilingMissingModel transformer = new FloorCeilingMissingModel()
+                .setInputCols(columnNames);
         
-        List<Double> ceilsList = data.select("ceils").head().getList(0);
-        Double[] ceils = ceilsList.toArray(new Double[ceilsList.size()]);
+        if (!data.select("floors").head().isNullAt(0)) {
+            List<Double> floorsList = data.select("floors").head().getList(0);
+            Double[] floors = floorsList.toArray(new Double[floorsList.size()]);
+            transformer = transformer.setFloors(ArrayUtils.toPrimitive(floors));
+        }
         
-        FloorCeilingModel transformer = new FloorCeilingModel()
-                .setInputCols(columnNames)
-                .setFloors(ArrayUtils.toPrimitive(floors))
-                .setCeils(ArrayUtils.toPrimitive(ceils));
+        if (!data.select("ceilings").head().isNullAt(0)) {
+            List<Double> ceilsList = data.select("ceilings").head().getList(0);
+            Double[] ceils = ceilsList.toArray(new Double[ceilsList.size()]);
+            transformer = transformer.setCeilings(ArrayUtils.toPrimitive(ceils));
+        }
+        
+        if (!data.select("missings").head().isNullAt(0)) {
+            List<Double> missList = data.select("missings").head().getList(0);
+            Double[] missings = missList.toArray(new Double[missList.size()]);
+            transformer = transformer.setMissings(ArrayUtils.toPrimitive(missings));
+        }
+
+        //String version = data.sparkSession().version();
         DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata, DefaultParamsReader$.MODULE$.getAndSetParams$default$3());
         //DefaultParamsReader$.MODULE$.getAndSetParams(transformer, metadata);
+
         return transformer;
     }
 }

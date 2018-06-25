@@ -42,7 +42,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.types.DataTypes.DoubleType;
 import static org.apache.spark.sql.types.DataTypes.IntegerType;
+import static org.apache.spark.sql.types.DataTypes.LongType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +56,7 @@ import static org.junit.Assert.*;
  *
  * @author Julien Pierret
  */
-public class FloorCeilingTest {
+public class FloorCeilingMissingTest {
     
     private SetupSparkTest sparkSetup;
     private SparkSession spark;
@@ -74,7 +76,7 @@ public class FloorCeilingTest {
         sparkSetup.tearDown();
     }
     
-    public FloorCeilingTest() {
+    public FloorCeilingMissingTest() {
     }
     
     @Test
@@ -88,18 +90,18 @@ public class FloorCeilingTest {
         
         data = data.select("Numeric1", "Numeric2", "Numeric3");
         
-        data = data.withColumn("Numeric1_tmp", col("Numeric1").cast(IntegerType))
+        data = data.withColumn("Numeric1_tmp", col("Numeric1").cast(DoubleType))
                 .drop("Numeric1").withColumnRenamed("Numeric1_tmp", "Numeric1");
         data = data.withColumn("Numeric2_tmp", col("Numeric2").cast(IntegerType))
                 .drop("Numeric2").withColumnRenamed("Numeric2_tmp", "Numeric2");
-        data = data.withColumn("Numeric3_tmp", col("Numeric3").cast(IntegerType))
+        data = data.withColumn("Numeric3_tmp", col("Numeric3").cast(LongType))
                 .drop("Numeric3").withColumnRenamed("Numeric3_tmp", "Numeric3");
         
         // Show the input data
         data.show();
         
         // build a pipeline that concats two columns
-        FloorCeiling fc = new FloorCeiling()
+        FloorCeilingMissing fc = new FloorCeilingMissing()
                 .setInputCols( new String[] {"Numeric1", "Numeric2", "Numeric3"} )
                 .setLowerPercentile(0.10)
                 .setUpperPercentile(0.90);

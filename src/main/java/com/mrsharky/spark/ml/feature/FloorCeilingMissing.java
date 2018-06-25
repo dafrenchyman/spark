@@ -23,7 +23,7 @@
  */
 package com.mrsharky.spark.ml.feature;
 
-import com.mrsharky.spark.ml.feature.models.FloorCeilingModel;
+import com.mrsharky.spark.ml.feature.models.FloorCeilingMissingModel;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
@@ -44,11 +44,12 @@ import org.apache.spark.ml.util.DefaultParamsWritable;
  *
  * @author Julien Pierret
  */
-public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serializable, DefaultParamsWritable {
+public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> implements Serializable, DefaultParamsWritable {
     
     private StringArrayParam _inputCols;
     private DoubleParam _lowerPercentile;
     private DoubleParam _upperPercentile;
+    private DoubleParam _missingPercentile;
     private String _uid;
    
     @Override
@@ -56,12 +57,12 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         return _uid;
     }
     
-    public FloorCeiling(String uid) {
+    public FloorCeilingMissing(String uid) {
         _uid = uid;
     }
 
-    public FloorCeiling() {
-        _uid = FloorCeiling.class.getName() + "_" + UUID.randomUUID().toString();
+    public FloorCeilingMissing() {
+        _uid = FloorCeilingMissing.class.getName() + "_" + UUID.randomUUID().toString();
     }
     
     public String[] getInputCols() {
@@ -76,12 +77,16 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         return (double) this.get(_upperPercentile).get();
     }
     
-    public FloorCeiling setInputCols(List<String> columns) {
+    public double getMissingPercentile() {
+        return (double) this.get(_missingPercentile).get();
+    }
+    
+    public FloorCeilingMissing setInputCols(List<String> columns) {
         String[] columnsString = columns.toArray(new String[columns.size()]);
         return setInputCols(columnsString);
     }
     
-    public FloorCeiling setInputCols(String[] names) {
+    public FloorCeilingMissing setInputCols(String[] names) {
         _inputCols = inputCols();
         this.set(_inputCols, names);
         return this;
@@ -92,7 +97,7 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
      * @param value
      * @return 
      */
-    public FloorCeiling setLowerPercentile(double value) {
+    public FloorCeilingMissing setLowerPercentile(double value) {
         _lowerPercentile = lowerPercentile();
         this.set(_lowerPercentile, value);
         return this;
@@ -103,10 +108,28 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
      * @param value
      * @return 
      */
-    public FloorCeiling setUpperPercentile(double value) {
+    public FloorCeilingMissing setUpperPercentile(double value) {
         _upperPercentile = upperPercentile();
         this.set(_upperPercentile, value);
         return this;
+    }
+    
+    public FloorCeilingMissing setMissingPercentile(double value) {
+        _missingPercentile = missingPercentile();
+        this.set(_missingPercentile, value);
+        return this;
+    }
+    
+    public boolean hasLowerPercentile() {
+        return !this.get(this.lowerPercentile()).isEmpty();
+    }
+    
+    public boolean hasUpperPercentile() {
+        return !this.get(this.upperPercentile()).isEmpty();
+    }
+    
+    public boolean hasMissingPercentile() {
+        return !this.get(this.missingPercentile()).isEmpty();
     }
     
     @Override
@@ -115,16 +138,11 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
     }    
     
     @Override
-    public FloorCeilingModel fit(Dataset<?> dataset) {
+    public FloorCeilingMissingModel fit(Dataset<?> dataset) {
         String[] columns = this.getInputCols();
         double[] floors = new double[columns.length];
         double[] ceilings = new double[columns.length];
-        double lowerPerc = this.getLowerPercentile()*100;
-        double upperPerc = this.getUpperPercentile()*100;
-        lowerPerc = lowerPerc <= 0  ? 0.01 : lowerPerc;
-        upperPerc = upperPerc > 100 ? 100  : upperPerc;
-        double[] min = new double[columns.length];
-        double[] max = new double[columns.length];
+        double[] missings = new double[columns.length];
         
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
@@ -161,35 +179,90 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
             
             Percentile perc = new Percentile();
             perc.setData(valuesDouble);
-            floors[i] = perc.evaluate(lowerPerc);
-            ceilings[i] = perc.evaluate(upperPerc);
-            if (floors[i] == ceilings[i]) {
-                floors[i] = currMin;
-                ceilings[i] = currMax;
+            
+            // Lower Percentile
+            if (!this.get(this.lowerPercentile()).isEmpty()) {
+                double lowerPerc = this.getLowerPercentile()*100;
+                lowerPerc = lowerPerc <= 0  ? 0.0 : lowerPerc;
+                if (lowerPerc == 0.0) {
+                    floors[i] = currMin;
+                } else {
+                    floors[i] = perc.evaluate(lowerPerc);
+                }
             }
-            min[i] = currMin;
-            max[i] = currMax;
+            
+            // Upper Percentile
+            if (!this.get(this.upperPercentile()).isEmpty()) {
+                double upperPerc = this.getUpperPercentile()*100;
+                upperPerc = upperPerc > 100 ? 100 : upperPerc;
+                if (upperPerc == 100.0) {
+                    ceilings[i] = currMax;
+                } else {
+                    ceilings[i] = perc.evaluate(upperPerc);
+                }
+            }
+            
+            // Missing Percentile
+            if (!this.get(this.missingPercentile()).isEmpty()) {
+                double missingPerc = this.getMissingPercentile()*100;
+                missingPerc = missingPerc <= 0  ? 0.0 : missingPerc;
+                missingPerc = missingPerc > 100 ? 100 : missingPerc;
+                if (missingPerc == 100.0) {
+                    missings[i] = currMax;
+                } else if (missingPerc == 0.0) {
+                    missings[i] = currMin;
+                } else {
+                    missings[i] = perc.evaluate(missingPerc);
+                }
+            }
+            
+            // Sometimes floor/ceiling can be the same value (for booleans) this forces it so it won't be
+            // TODO: Should make this optional
+            if (!this.get(this.lowerPercentile()).isEmpty() && !this.get(this.upperPercentile()).isEmpty()) {
+                if (floors[i] == ceilings[i]) {
+                    floors[i] = currMin;
+                    ceilings[i] = currMax;
+                }
+            }
         }
         
-        FloorCeilingModel fcm = new FloorCeilingModel()
-                .setInputCols(columns)
-                .setCeils(ceilings)
-                .setFloors(floors);
+        // Generate the model now that we have everything
+        FloorCeilingMissingModel fcm = new FloorCeilingMissingModel()
+                .setInputCols(columns);
+        if (!this.get(this.upperPercentile()).isEmpty())  {
+            fcm = fcm.setCeilings(ceilings);
+        }
+        
+        if (!this.get(this.lowerPercentile()).isEmpty()) {
+            fcm = fcm.setFloors(floors);
+        }
+        
         return fcm;
     }
 
     @Override
-    public Estimator<FloorCeilingModel> copy(ParamMap arg0) {
-        FloorCeiling copied = new FloorCeiling()
-                .setInputCols(this.getInputCols())
-                .setLowerPercentile(this.getLowerPercentile())
-                .setUpperPercentile(this.getUpperPercentile());
+    public Estimator<FloorCeilingMissingModel> copy(ParamMap arg0) {
+        FloorCeilingMissing copied = new FloorCeilingMissing()
+                .setInputCols(this.getInputCols());
+        
+        if (!this.get(this.missingPercentile()).isEmpty()) {
+            copied = copied.setMissingPercentile(this.getMissingPercentile());
+        }
+        
+        if (!this.get(this.lowerPercentile()).isEmpty()) {
+            copied = copied.setLowerPercentile(this.getLowerPercentile());
+        }
+        
+        if (!this.get(this.upperPercentile()).isEmpty()) {
+            copied = copied.setUpperPercentile(this.getUpperPercentile());
+        }
+                
         return copied;
     }
 
     @Override
     public MLWriter write() {
-        return new FloorCeilingWriter(this);
+        return new FloorCeilingMissingWriter(this);
     }
 
     @Override
@@ -197,23 +270,27 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
         write().saveImpl(path);
     }
     
-    public static MLReader<FloorCeiling> read() {
-        return new FloorCeilingReader();
+    public static MLReader<FloorCeilingMissing> read() {
+        return new FloorCeilingMissingReader();
     }
     
-    public FloorCeiling load(String path) {
-        return ((FloorCeilingReader)read()).load(path);
+    public FloorCeilingMissing load(String path) {
+        return ((FloorCeilingMissingReader)read()).load(path);
     }
     
     public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$inputCols_$eq(StringArrayParam stringArrayParam) {
         this._inputCols = stringArrayParam;
     }
     
-    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$lowerPercentiles_$eq(DoubleParam doubleParam) {
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$lowerPercentile_$eq(DoubleParam doubleParam) {
         this._lowerPercentile = doubleParam;
     }
     
-    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$upperPercentiles_$eq(DoubleParam doubleParam) {
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$upperPercentile_$eq(DoubleParam doubleParam) {
+        this._upperPercentile = doubleParam;
+    }
+    
+    public void com$mrsharky$spark$ml$feature$FloorCeiling$_setter_$missingPercentile_$eq(DoubleParam doubleParam) {
         this._upperPercentile = doubleParam;
     }
     
@@ -227,5 +304,9 @@ public class FloorCeiling extends Estimator<FloorCeilingModel> implements Serial
     
     public DoubleParam upperPercentile() {     
         return new DoubleParam(this, "upperPercentile", "Upper percentile cutoff");
+    }
+    
+    public DoubleParam missingPercentile() {     
+        return new DoubleParam(this, "missingPercentile", "Percentile to use for missing values");
     }
 }

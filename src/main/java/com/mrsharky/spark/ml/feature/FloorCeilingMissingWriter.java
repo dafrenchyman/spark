@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mrsharky.spark.ml.feature.models;
+package com.mrsharky.spark.ml.feature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,21 +34,14 @@ import org.apache.spark.ml.util.DefaultParamsWriter$;
  *
  * @author Julien Pierret
  */
-public class FloorCeilingModelWriter extends MLWriter implements Serializable {
+public class FloorCeilingMissingWriter extends MLWriter implements Serializable {
 
-    private FloorCeilingModel instance;
+    private FloorCeilingMissing instance;
     
-    public FloorCeilingModelWriter(FloorCeilingModel instance) {
-        this.instance = instance;
-    }
-      
-    public FloorCeilingModel getInstance() {
-        return instance;
-    }
-      
-    public void setInstance(FloorCeilingModel instance) {
-        this.instance = instance;
-    }
+    public FloorCeilingMissingWriter(FloorCeilingMissing instance) { this.instance = instance; }
+    
+    public FloorCeilingMissing getInstance() { return instance; } 
+    public void setInstance(FloorCeilingMissing instance) { this.instance = instance; }
       
     @Override
     public void saveImpl(String path) {
@@ -56,8 +49,19 @@ public class FloorCeilingModelWriter extends MLWriter implements Serializable {
                 .getMetadataToSave$default$3(), DefaultParamsWriter$.MODULE$.getMetadataToSave$default$4());
         Data data = new Data();
         data.setInputCols(instance.getInputCols());
-        data.setFloors(instance.getFloors());
-        data.setCeils(instance.getCeil());
+        
+        if (instance.hasLowerPercentile()) {
+            data.setLowerPercentile(instance.getLowerPercentile());
+        }
+        
+        if (instance.hasUpperPercentile()) {
+            data.setUpperPercentile(instance.getUpperPercentile());
+        }
+        
+        if (instance.hasMissingPercentile()) {
+            data.setMissingPercentile(instance.getMissingPercentile());
+        }
+        
         List<Data> listData = new ArrayList<>();
         listData.add(data);
         String dataPath = new Path(path, "data").toString();
@@ -65,18 +69,22 @@ public class FloorCeilingModelWriter extends MLWriter implements Serializable {
     }
 
     public static class Data implements Serializable {
-        private String[] _inputCols;
-        private double[] _floors;
-        private double[] _ceilings;
+        String[] _inputCols;
+        double _lowerPercentile;
+        double _upperPercentile;
+        double _missingPercentile;
 
         // Getters
-        public String[] getInputCols() { return _inputCols; }
-        public double[] getFloors()    { return _floors;    }
-        public double[] getCeils()     { return _ceilings;  }
+        public String[] getInputCols()       { return _inputCols;         }
+        public double getLowerPercentile()   { return _lowerPercentile;   }
+        public double getUpperPercentile()   { return _upperPercentile;   }
+        public double getMissingPercentile() { return _missingPercentile; }
         
         // Setters
-        public void setInputCols(String[] inputCols) { _inputCols = inputCols; }
-        public void setFloors(double[] floors)       { _floors = floors;       }
-        public void setCeils(double[] ceilings)      { _ceilings = ceilings;   }
+        public void setInputCols(String[] inputCols)               { _inputCols = inputCols;                 }
+        public void setLowerPercentile(double lowerPercentile)     { _lowerPercentile = lowerPercentile;     }
+        public void setUpperPercentile(double upperPercentile)     { _upperPercentile = upperPercentile;     }
+        public void setMissingPercentile(double missingPercentile) { _missingPercentile = missingPercentile; }
+        
     }
 }
