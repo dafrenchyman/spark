@@ -70,21 +70,21 @@ public class FloorCeilingMissingWriter extends MLWriter implements Serializable 
 
     public static class Data implements Serializable {
         String[] _inputCols;
-        double _lowerPercentile;
-        double _upperPercentile;
-        double _missingPercentile;
+        Double _lowerPercentile;
+        Double _upperPercentile;
+        Double _missingPercentile;
 
         // Getters
         public String[] getInputCols()       { return _inputCols;         }
-        public double getLowerPercentile()   { return _lowerPercentile;   }
-        public double getUpperPercentile()   { return _upperPercentile;   }
-        public double getMissingPercentile() { return _missingPercentile; }
+        public Double getLowerPercentile()   { return _lowerPercentile;   }
+        public Double getUpperPercentile()   { return _upperPercentile;   }
+        public Double getMissingPercentile() { return _missingPercentile; }
         
         // Setters
         public void setInputCols(String[] inputCols)               { _inputCols = inputCols;                 }
-        public void setLowerPercentile(double lowerPercentile)     { _lowerPercentile = lowerPercentile;     }
-        public void setUpperPercentile(double upperPercentile)     { _upperPercentile = upperPercentile;     }
-        public void setMissingPercentile(double missingPercentile) { _missingPercentile = missingPercentile; }
+        public void setLowerPercentile(Double lowerPercentile)     { _lowerPercentile = lowerPercentile;     }
+        public void setUpperPercentile(Double upperPercentile)     { _upperPercentile = upperPercentile;     }
+        public void setMissingPercentile(Double missingPercentile) { _missingPercentile = missingPercentile; }
         
     }
 }

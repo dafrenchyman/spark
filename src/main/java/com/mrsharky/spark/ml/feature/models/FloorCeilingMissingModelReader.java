@@ -60,19 +60,19 @@ public class FloorCeilingMissingModelReader extends MLReader<FloorCeilingMissing
         if (!data.select("floors").head().isNullAt(0)) {
             List<Double> floorsList = data.select("floors").head().getList(0);
             Double[] floors = floorsList.toArray(new Double[floorsList.size()]);
-            transformer = transformer.setFloors(ArrayUtils.toPrimitive(floors));
+            transformer = transformer.setFloors(floors);
         }
         
         if (!data.select("ceilings").head().isNullAt(0)) {
             List<Double> ceilsList = data.select("ceilings").head().getList(0);
             Double[] ceils = ceilsList.toArray(new Double[ceilsList.size()]);
-            transformer = transformer.setCeilings(ArrayUtils.toPrimitive(ceils));
+            transformer = transformer.setCeilings(ceils);
         }
         
         if (!data.select("missings").head().isNullAt(0)) {
             List<Double> missList = data.select("missings").head().getList(0);
             Double[] missings = missList.toArray(new Double[missList.size()]);
-            transformer = transformer.setMissings(ArrayUtils.toPrimitive(missings));
+            transformer = transformer.setMissings(missings);
         }
 
         //String version = data.sparkSession().version();

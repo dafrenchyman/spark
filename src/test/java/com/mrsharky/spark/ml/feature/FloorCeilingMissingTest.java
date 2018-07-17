@@ -103,8 +103,9 @@ public class FloorCeilingMissingTest {
         // build a pipeline that concats two columns
         FloorCeilingMissing fc = new FloorCeilingMissing()
                 .setInputCols( new String[] {"Numeric1", "Numeric2", "Numeric3"} )
-                .setLowerPercentile(0.10)
+                //.setLowerPercentile(0.10)
                 .setUpperPercentile(0.90);
+                //.setMissingPercentile(0.50);
         Pipeline pipeline = new Pipeline().setStages( new PipelineStage[] { fc });
         
         // Save the pipeline without training it

@@ -24,6 +24,7 @@
 package com.mrsharky.spark.ml.feature;
 
 import com.mrsharky.spark.ml.feature.models.FloorCeilingMissingModel;
+import com.mrsharky.spark.ml.param.DoubleParam2;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.spark.ml.Estimator;
 import org.apache.spark.ml.param.DoubleParam;
+import org.apache.spark.ml.param.Param;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.param.StringArrayParam;
 import org.apache.spark.ml.util.MLReader;
@@ -59,26 +61,38 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
     
     public FloorCeilingMissing(String uid) {
         _uid = uid;
+        /*_lowerPercentile = lowerPercentile();
+        this.set(_lowerPercentile, null);
+        _upperPercentile = upperPercentile();
+        this.set(_upperPercentile, null);
+        _missingPercentile = missingPercentile();
+        this.set(_missingPercentile, null);*/
     }
 
     public FloorCeilingMissing() {
         _uid = FloorCeilingMissing.class.getName() + "_" + UUID.randomUUID().toString();
+        /*_lowerPercentile = lowerPercentile();
+        this.set(_lowerPercentile, null);
+        _upperPercentile = upperPercentile();
+        this.set(_upperPercentile, null);
+        _missingPercentile = missingPercentile();
+        this.set(_missingPercentile, null);*/
     }
     
     public String[] getInputCols() {
         return this.get(_inputCols).get();
     }
     
-    public double getLowerPercentile() {
-        return (double) this.get(_lowerPercentile).get();
+    public Double getLowerPercentile() {
+        return (Double) this.get(_lowerPercentile).get();
     }
     
-    public double getUpperPercentile() {
-        return (double) this.get(_upperPercentile).get();
+    public Double getUpperPercentile() {
+        return (Double) this.get(_upperPercentile).get();
     }
     
-    public double getMissingPercentile() {
-        return (double) this.get(_missingPercentile).get();
+    public Double getMissingPercentile() {
+        return (Double) this.get(_missingPercentile).get();
     }
     
     public FloorCeilingMissing setInputCols(List<String> columns) {
@@ -140,9 +154,9 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
     @Override
     public FloorCeilingMissingModel fit(Dataset<?> dataset) {
         String[] columns = this.getInputCols();
-        double[] floors = new double[columns.length];
-        double[] ceilings = new double[columns.length];
-        double[] missings = new double[columns.length];
+        Double[] floors = new Double[columns.length];
+        Double[] ceilings = new Double[columns.length];
+        Double[] missings = new Double[columns.length];
         
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
@@ -181,7 +195,7 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
             perc.setData(valuesDouble);
             
             // Lower Percentile
-            if (!this.get(this.lowerPercentile()).isEmpty()) {
+            if (this.hasLowerPercentile()) {
                 double lowerPerc = this.getLowerPercentile()*100;
                 lowerPerc = lowerPerc <= 0  ? 0.0 : lowerPerc;
                 if (lowerPerc == 0.0) {
@@ -192,7 +206,7 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
             }
             
             // Upper Percentile
-            if (!this.get(this.upperPercentile()).isEmpty()) {
+            if (this.hasUpperPercentile()) {
                 double upperPerc = this.getUpperPercentile()*100;
                 upperPerc = upperPerc > 100 ? 100 : upperPerc;
                 if (upperPerc == 100.0) {
@@ -203,7 +217,7 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
             }
             
             // Missing Percentile
-            if (!this.get(this.missingPercentile()).isEmpty()) {
+            if (this.hasMissingPercentile()) {
                 double missingPerc = this.getMissingPercentile()*100;
                 missingPerc = missingPerc <= 0  ? 0.0 : missingPerc;
                 missingPerc = missingPerc > 100 ? 100 : missingPerc;

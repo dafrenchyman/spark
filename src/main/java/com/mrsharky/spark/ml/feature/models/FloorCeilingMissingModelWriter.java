@@ -74,20 +74,20 @@ public class FloorCeilingMissingModelWriter extends MLWriter implements Serializ
 
     public static class Data implements Serializable {
         private String[] _inputCols;
-        private double[] _floors;
-        private double[] _ceilings;
-        private double[] _missings;
+        private Double[] _floors;
+        private Double[] _ceilings;
+        private Double[] _missings;
 
         // Getters
         public String[] getInputCols() { return _inputCols; }
-        public double[] getFloors()    { return _floors;    }
-        public double[] getCeilings()  { return _ceilings;  }
-        public double[] getMissings()  { return _missings;  }
+        public Double[] getFloors()    { return _floors;    }
+        public Double[] getCeilings()  { return _ceilings;  }
+        public Double[] getMissings()  { return _missings;  }
         
         // Setters
         public void setInputCols(String[] inputCols) { _inputCols = inputCols; }
-        public void setFloors(double[] floors)       { _floors = floors;       }
-        public void setCeilings(double[] ceilings)   { _ceilings = ceilings;   }
-        public void setMissings(double[] ceilings)   { _missings = ceilings;   }
+        public void setFloors(Double[] floors)       { _floors = floors;       }
+        public void setCeilings(Double[] ceilings)   { _ceilings = ceilings;   }
+        public void setMissings(Double[] ceilings)   { _missings = ceilings;   }
     }
 }

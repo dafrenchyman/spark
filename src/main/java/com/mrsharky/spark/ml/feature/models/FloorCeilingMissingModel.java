@@ -23,6 +23,7 @@
  */
 package com.mrsharky.spark.ml.feature.models;
 
+import com.mrsharky.spark.ml.param.DoubleArrayParam;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,8 +31,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.ml.Model;
-import org.apache.spark.ml.param.DoubleArrayParam;
+import org.apache.spark.ml.param.Param;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.param.StringArrayParam;
 import org.apache.spark.ml.util.MLWriter;
@@ -75,37 +77,37 @@ public class FloorCeilingMissingModel extends Model<FloorCeilingMissingModel> im
         return this;
     }
     
-    public FloorCeilingMissingModel setFloors(double[] floors) {
+    public FloorCeilingMissingModel setFloors(Double[] floors) {
         this._floors = floors();
         this.set(this._floors, floors);
         return this;
     }
     
-    public FloorCeilingMissingModel setCeilings(double[] ceils) {
+    public FloorCeilingMissingModel setCeilings(Double[] ceils) {
         this._ceilings = ceilings();
         this.set(this._ceilings, ceils);
         return this;
     }
     
-    public FloorCeilingMissingModel setMissings(double[] ceils) {
-        this._missings = ceilings();
+    public FloorCeilingMissingModel setMissings(Double[] ceils) {
+        this._missings = missings();
         this.set(this._missings, ceils);
         return this;
     }
-    
+
     public String[] getInputCols() {
         return this.get(_inputCols).get();
     }
     
-    public double[] getFloors() {
+    public Double[] getFloors() {
         return this.get(_floors).get();
     }
     
-    public double[] getCeilings() {
+    public Double[] getCeilings() {
         return this.get(_ceilings).get();
     }
     
-    public double[] getMissings() {
+    public Double[] getMissings() {
         return this.get(_missings).get();
     }
     
@@ -123,9 +125,9 @@ public class FloorCeilingMissingModel extends Model<FloorCeilingMissingModel> im
      
     private Map<String, Triplet<Double, Double, Double>> generateColumnsToProcess() {
         String[] columnNames  = this.get(_inputCols).get();
-        double[] columnFloors = hasFloors()   ? this.get(_floors).get()    : null;
-        double[] columnCeils  = hasCeilings() ? this.get(_ceilings ).get() : null;
-        double[] columnMiss   = hasMissings() ? this.get(_missings ).get() : null;
+        Double[] columnFloors = hasFloors()   ? this.get(_floors).get()    : null;
+        Double[] columnCeils  = hasCeilings() ? this.get(_ceilings ).get() : null;
+        Double[] columnMiss   = hasMissings() ? this.get(_missings ).get() : null;
         Map<String, Triplet<Double, Double, Double>> columnsToProcess = new HashMap<String, Triplet<Double, Double, Double>>();
         for (int i = 0; i < columnNames.length; i++) {
             String currName  = columnNames[i];
