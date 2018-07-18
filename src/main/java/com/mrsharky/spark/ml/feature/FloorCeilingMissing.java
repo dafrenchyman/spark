@@ -23,6 +23,7 @@
  */
 package com.mrsharky.spark.ml.feature;
 
+import com.mrsharky.spark.functions.RowToDouble;
 import com.mrsharky.spark.ml.feature.models.FloorCeilingMissingModel;
 import java.io.IOException;
 import java.io.Serializable;
@@ -163,11 +164,14 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
      * @return 
      */
     private static Double[] getPercentiles(JavaRDD<Double> rdd, Double[] percentiles) {
-        long rddSize = rdd.count();
+        
         int numPartitions = rdd.getNumPartitions();
         Double[] values = new Double[percentiles.length];
         JavaRDD<Double> sorted = rdd.sortBy((Double d) -> d, true, numPartitions);
+        sorted.persist(StorageLevel.DISK_ONLY());
+        long rddSize = sorted.count();
         JavaPairRDD<Long, Double> indexed = sorted.zipWithIndex().mapToPair((Tuple2<Double, Long> t) -> t.swap());
+        indexed.persist(StorageLevel.DISK_ONLY());
 
         for (int i = 0; i < percentiles.length; i++) {
             Double percentile = percentiles[i];
@@ -178,36 +182,45 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
                 values[i] = null;
             }
         }
+        sorted.unpersist();
+        indexed.unpersist();
         return values;
     }
     
     private JavaRDD<Double> rowToDouble(Dataset<Row> dataset) {
         JavaRDD<Row> data = dataset.toJavaRDD();
-        JavaRDD<Double> dataDouble = data.map(new Function<Row,Double>() {
-            public Double call(Row s) {
-                Object value = s.get(0);
-                Double val = null; 
-                if (value != null) {
-                    if (value.getClass().equals(Double.class)) {
-                        val = s.getDouble(0);
-                    } else if (value.getClass().equals(Integer.class)) {
-                        val = (double) s.getInt(0);
-                    } else if (value.getClass().equals(Float.class)) {
-                        val = (double) s.getFloat(0);
-                    } else if (value.getClass().equals(Long.class)) {
-                        val = (double) s.getLong(0);
-                    } else if (value.getClass().equals(Short.class)) {
-                        val = (double) s.getShort(0);
+        JavaRDD<Double> dataDouble = null;
+        if (true) {
+            RowToDouble rtd = new RowToDouble();
+            dataDouble = data.mapPartitions(s -> rtd.call(s));
+        } else { // old method (mapPartitions "should" be faster)
+            dataDouble = data.map(new Function<Row,Double>() {
+                public Double call(Row s) {
+                    Object value = s.get(0);
+                    Double val = null; 
+                    if (value != null) {
+                        if (value.getClass().equals(Double.class)) {
+                            val = s.getDouble(0);
+                        } else if (value.getClass().equals(Integer.class)) {
+                            val = (double) s.getInt(0);
+                        } else if (value.getClass().equals(Float.class)) {
+                            val = (double) s.getFloat(0);
+                        } else if (value.getClass().equals(Long.class)) {
+                            val = (double) s.getLong(0);
+                        } else if (value.getClass().equals(Short.class)) {
+                            val = (double) s.getShort(0);
+                        }
                     }
+                    return val;
                 }
-                return val;
-            }
-        });
+            });
+        }
         return dataDouble;
     }
     
     @Override
     public FloorCeilingMissingModel fit(Dataset<?> dataset) {
+        dataset.persist(StorageLevel.DISK_ONLY());
         String[] columns  = this.getInputCols();
         Double[] floors   = new Double[columns.length];
         Double[] ceilings = new Double[columns.length];
@@ -218,7 +231,6 @@ public class FloorCeilingMissing extends Estimator<FloorCeilingMissingModel> imp
             Dataset subset = dataset.select(column).where(col(column).isNotNull());
             
             JavaRDD<Double> doubleData = rowToDouble(subset);
-            doubleData.persist(StorageLevel.DISK_ONLY());
             
             Double[] percentiles = new Double[3];
             if (this.hasLowerPercentile()) {

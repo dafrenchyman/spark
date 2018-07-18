@@ -87,6 +87,8 @@ public class FloorCeilingMissingTest {
         PrintSparkSetting(spark);
         
         Dataset<Row> data = spark.read().format("csv").option("header", true).load("./data/testData.csv");
+        data = data.repartition(10);
+        
         
         data = data.select("Numeric1", "Numeric2", "Numeric3");
         
